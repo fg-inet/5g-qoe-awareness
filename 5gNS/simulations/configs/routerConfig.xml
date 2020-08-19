@@ -1,0 +1,17 @@
+<config>
+	<interface hosts="stdHost{0,2}" address="10.0.0.x"/>
+	<interface hosts="stdHost{1,3}" address="10.0.1.x"/>
+	<interface hosts="etherSwitch*" towards="stdHost{0,2}" address="10.0.0.x"/>
+	<interface hosts="etherSwitch*" towards="stdHost{1,3}" address="10.0.1.x"/>
+	<interface hosts="etherSwitch" names="ppp0" address="10.0.0.x"/>
+	<interface hosts="etherSwitch1" names="ppp0" address="10.0.0.x"/>
+	<interface hosts="etherSwitch" names="ppp1" address="10.0.1.x"/>
+	<interface hosts="etherSwitch1" names="ppp1" address="10.0.1.x"/>
+	<interface hosts="etherHub" address="10.0.0.x" netmask="255.255.255.x"/>
+	<interface hosts="etherHub1" address="10.0.1.x" netmask="255.255.255.x"/>
+	<route hosts="etherSwitch" destination="10.0.0.5" netmask="255.255.255.255" interface="ppp0" metric="0"/>
+	<route hosts="etherSwitch1" destination="10.0.0.1" netmask="255.255.255.255" interface="ppp0" metric="0"/>
+	<route hosts="etherSwitch" destination="10.0.1.5" netmask="255.255.255.255" interface="ppp1" metric="0"/>
+	<route hosts="etherSwitch1" destination="10.0.1.1" netmask="255.255.255.255" interface="ppp1" metric="0"/>
+</config>
+

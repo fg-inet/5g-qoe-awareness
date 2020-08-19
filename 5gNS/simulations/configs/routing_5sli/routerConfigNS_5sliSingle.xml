@@ -1,0 +1,99 @@
+<config>
+	<!--Hosts address configurations-->
+	<interface hosts="hostVID[*]" address="10.0.0.x"/>
+	<interface hosts="hostLVD[*]" address="10.0.1.x"/>
+	<interface hosts="hostFDO[*]" address="10.0.2.x"/>
+	<interface hosts="hostSSH[*]" address="10.0.3.x"/>
+	<interface hosts="hostVIP[*]" address="10.0.4.x"/>
+	
+	
+	<!--Server address configurations-->
+	<interface hosts="serverVID" address="10.0.10.x"/>
+	<interface hosts="serverLVD" address="10.0.11.x"/>
+	<interface hosts="serverFDO" address="10.0.12.x"/>
+	<interface hosts="serverSSH" address="10.0.13.x"/>
+	<interface hosts="serverVIP" address="10.0.14.x"/>
+	
+	
+	<!--Router 0 address configurations-->
+	<interface hosts="router0" towards="hostVID[*]" address="10.0.0.x"/>
+	<interface hosts="router0" towards="hostLVD[*]" address="10.0.1.x"/>
+	<interface hosts="router0" towards="hostFDO[*]" address="10.0.2.x"/>
+	<interface hosts="router0" towards="hostSSH[*]" address="10.0.3.x"/>
+	<interface hosts="router0" towards="hostVIP[*]" address="10.0.4.x"/>
+	
+	<interface hosts="router0" names="ppp0" address="10.0.20.1"/> <!--Video slice-->
+	<interface hosts="router0" names="ppp1" address="10.0.21.1"/> <!--Live video slice-->
+	<interface hosts="router0" names="ppp2" address="10.0.22.1"/> <!--File download slice-->
+	<interface hosts="router0" names="ppp3" address="10.0.23.1"/> <!--SSH slice-->
+	<interface hosts="router0" names="ppp4" address="10.0.24.1"/> <!--VoIP slice-->
+	
+	
+	
+	<!--Router 1 address configurations-->
+	<interface hosts="router1" names="ppp0" address="10.0.20.2"/> <!--Video slice-->
+	<interface hosts="router1" names="ppp1" address="10.0.21.2"/> <!--Live video slice-->
+	<interface hosts="router1" names="ppp2" address="10.0.22.2"/> <!--File download slice-->
+	<interface hosts="router1" names="ppp3" address="10.0.23.2"/> <!--SSH slice-->
+	<interface hosts="router1" names="ppp4" address="10.0.24.2"/> <!--VoIP slice-->
+	
+	<interface hosts="router1" names="ppp5" address="10.0.30.1"/> <!--Single link-->
+	
+	
+	<!--Router 2 address configurations-->
+	<interface hosts="router2" towards="serverVID" address="10.0.10.x"/>
+	<interface hosts="router2" towards="serverLVD" address="10.0.11.x"/>
+	<interface hosts="router2" towards="serverFDO" address="10.0.12.x"/>
+	<interface hosts="router2" towards="serverSSH" address="10.0.13.x"/>
+	<interface hosts="router2" towards="serverVIP" address="10.0.14.x"/>
+	
+	<interface hosts="router2" names="ppp0" address="10.0.30.2"/> <!--Single link-->
+	
+	
+	<!--Hosts route configurations-->
+	<route hosts="hostVID[*]" destination="10.0.10.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="hostLVD[*]" destination="10.0.11.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="hostFDO[*]" destination="10.0.12.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="hostSSH[*]" destination="10.0.13.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="hostVIP[*]" destination="10.0.14.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	
+	
+	<!--Server route configurations-->
+	<route hosts="serverVID" destination="10.0.0.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="serverLVD" destination="10.0.1.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="serverFDO" destination="10.0.2.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="serverSSH" destination="10.0.3.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	<route hosts="serverVIP" destination="10.0.4.0" netmask="255.255.255.0" interface="ppp0" metric="100"/>
+	
+	
+	<!--Router 0 route configurations-->
+	<route hosts="router0" destination="10.0.10.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.20.2" metric="100"/>
+	<route hosts="router0" destination="10.0.11.0" netmask="255.255.255.0" interface="ppp1" gateway="10.0.21.2" metric="100"/>
+	<route hosts="router0" destination="10.0.12.0" netmask="255.255.255.0" interface="ppp2" gateway="10.0.22.2" metric="100"/>
+	<route hosts="router0" destination="10.0.13.0" netmask="255.255.255.0" interface="ppp3" gateway="10.0.23.2" metric="100"/>
+	<route hosts="router0" destination="10.0.14.0" netmask="255.255.255.0" interface="ppp4" gateway="10.0.24.2" metric="100"/>
+	
+	
+	<!--Router 1 route configurations-->
+	<route hosts="router1" destination="10.0.0.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.20.1" metric="100"/>
+	<route hosts="router1" destination="10.0.1.0" netmask="255.255.255.0" interface="ppp1" gateway="10.0.21.1" metric="100"/>
+	<route hosts="router1" destination="10.0.2.0" netmask="255.255.255.0" interface="ppp2" gateway="10.0.22.1" metric="100"/>
+	<route hosts="router1" destination="10.0.3.0" netmask="255.255.255.0" interface="ppp3" gateway="10.0.23.1" metric="100"/>
+	<route hosts="router1" destination="10.0.4.0" netmask="255.255.255.0" interface="ppp4" gateway="10.0.24.1" metric="100"/>
+	
+	<route hosts="router1" destination="10.0.10.0" netmask="255.255.255.0" interface="ppp5" gateway="10.0.30.2" metric="100"/>
+	<route hosts="router1" destination="10.0.11.0" netmask="255.255.255.0" interface="ppp5" gateway="10.0.30.2" metric="100"/>
+	<route hosts="router1" destination="10.0.12.0" netmask="255.255.255.0" interface="ppp5" gateway="10.0.30.2" metric="100"/>
+	<route hosts="router1" destination="10.0.13.0" netmask="255.255.255.0" interface="ppp5" gateway="10.0.30.2" metric="100"/>
+	<route hosts="router1" destination="10.0.14.0" netmask="255.255.255.0" interface="ppp5" gateway="10.0.30.2" metric="100"/>
+	
+	
+	<!--Router 2 route configurations-->
+	<route hosts="router2" destination="10.0.0.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.30.1" metric="100"/>
+	<route hosts="router2" destination="10.0.1.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.30.1" metric="100"/>
+	<route hosts="router2" destination="10.0.2.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.30.1" metric="100"/>
+	<route hosts="router2" destination="10.0.3.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.30.1" metric="100"/>
+	<route hosts="router2" destination="10.0.4.0" netmask="255.255.255.0" interface="ppp0" gateway="10.0.30.1" metric="100"/>
+	
+</config>
+
