@@ -2,7 +2,7 @@
 
 Git repository which includes:
 1. The Omnet++ Project for simulations with and without approximated network slicing
-2. Additional files for the INET framework that support the Omnet++ simulations
+2. Additional files for the INET framework that include all applications used in the simulation
 3. Scripts for export and evaluation of simulated data - without any documentation
 4. Scripts for the optimization algorithm which include some inline documentation
 
@@ -21,6 +21,6 @@ Installation steps (list may be incomplete):
   3. Right-click the inet4 project in project explorer and select "build project". This should compile the framework
   4. You can also compile the framework from console. To do that look at the INSTALL textfile you'll find in the INET folder.
  
-To run the simulation from IDE select an INI file from 5gNS folder (baselineTest.ini should be a safe first bet) in Omnet++ IDE and click the green run button. When the simulation starts a configuration can be selected. For the first run, I reccomend using the "baselineTestTemp" configuration which will start a simulation with 10 clients for each of VoIP, SSH, VoD, live video and file download applications.
+To run the simulation from IDE open an INI file from 5gNS folder (baselineTest.ini should be a safe first bet) in Omnet++ IDE and click the green run button. When the simulation starts a configuration can be selected. For the first run, I reccomend using the "baselineTestTemp" configuration which will start a simulation with 10 clients for each of VoIP, SSH, VoD, live video and file download applications.
 
 For questions contact Marcin: marcin.l.bosk@campus.tu-berlin.de
