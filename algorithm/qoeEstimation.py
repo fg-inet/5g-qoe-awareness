@@ -64,8 +64,10 @@ class ClientQoeEstimator:
             suffix = 'Fine'
         if  self.cliType == 'hostVID':
             suffix = 'FineLong'
-        if self.cliType == 'hostLVD':
-            suffix = 'FineLong'
+        # if self.cliType == 'hostLVD':
+        #     suffix = 'FineLong'
+        # if  self.cliType == 'hostVID':
+        #     suffix = 'Long'
         file_to_read = csvFolder + 'heatMap_' + self.cliType + suffix + '.csv'
         with open(file_to_read, mode='r') as readFile:
             csv_reader = csv.reader(readFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)

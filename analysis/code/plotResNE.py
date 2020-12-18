@@ -372,9 +372,9 @@ def plotUtilityCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, nodeTypesToPlo
     partialCDFEnd(fig,ax1,'', 'Utility', prePath+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'_'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + '.pdf')
     partialCDFEndPNG(fig,ax1,'', 'Utility', prePath+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'_'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + '.png')
 
-plotUtilityCdfAllApps('baselineTest', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
-plotUtilityCdfAllApps('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
-plotUtilityCdfAllApps('baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
+# plotUtilityCdfAllApps('baselineTest', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
+# plotUtilityCdfAllApps('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
+# plotUtilityCdfAllApps('baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
 # plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostVID')
 
 niceTestName = {
@@ -784,11 +784,11 @@ def plotMosBaseSliComp(testNameBaseline, testName2sli, testName5sli, numCLI, nod
     partialCDFEnd(fig,ax,'', 'Utility', prePath+str(globalCounter)+'_cdf_' + testNameBaseline + '_' + dataIdent + '_' + str(cliType) + '_compWith' + str(testName2sli) + '_and_' + testName5sli + '.pdf')
     partialCDFEndPNG(fig,ax,chooseName(cliType), 'Utility', prePath+str(globalCounter)+'_cdf_' + testNameBaseline + '_' + dataIdent + '_' + str(cliType) + '_compWith' + str(testName2sli) + '_and_' + testName5sli + '.png')
 
-plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostVID')
-plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostLVD')
-plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostFDO')
-plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostSSH')
-plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostVIP')
+# plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostVID')
+# plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostLVD')
+# plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostFDO')
+# plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostSSH')
+# plotMosBaseSliComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', 'baselineTestNS_5sli_AlgoTest_alpha05', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'hostVIP')
 
 def plotTPS(testName, numCLI, nodeTypes, nodeSplit, numSlices, direction, cutoff):
     global globalCounter
@@ -905,6 +905,11 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
 # plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [30 for x in range(5)], 1, 400)
 # plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [40 for x in range(5)], 1, 400)
 # plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
+
+
+# plotAll('initialTestHTB_105mbps', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
+plotAll('initialTestHTB_105mbps_bla', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
+
 
 # plotAll('baselineTestNS_2sli_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
 # plotAll('baselineTestNS_2sli_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)

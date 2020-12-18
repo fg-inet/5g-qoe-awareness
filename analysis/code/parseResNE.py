@@ -191,7 +191,10 @@ def extractAll(testName, nodeTypes, nodeSplit, numSlices):
 # extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,20,20,20,20], 1)
 # extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [30,30,30,30,30], 1)
 # extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [40,40,40,40,40], 1)
-extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,50,50,50,50], 1)
+# extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,50,50,50,50], 1)
+
+# extractAll('initialTestHTB_105mbps', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1,1,1,1,1], 1)
+extractAll('initialTestHTB_105mbps_bla', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1,1,1,1,1], 1)
 
 # extractAll('baselineTestNS_2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
 # extractAll('baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
