@@ -26,10 +26,11 @@
 
 #include <tgmath.h>
 
+#include <fstream>
+
 #include <omnetpp.h>
 
 #include <list>
-#include <armadillo>
 
 namespace inet {
 
