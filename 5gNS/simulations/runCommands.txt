@@ -1,0 +1,3 @@
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSBaseTest4_R20_Q40_M100_C125 -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSNSTest4_2sli_R20_Q40_M100_C125 -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSNSTest4_5sli_R20_Q40_M100_C125 -s 1

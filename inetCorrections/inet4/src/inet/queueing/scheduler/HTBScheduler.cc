@@ -296,18 +296,29 @@ simtime_t HTBScheduler::doEvents(int level) {
 // "force it" to dequeue again.
 int HTBScheduler::getNumPackets() const
 {
+    EV << "Next Event 1 " << classModeChangeEvent->getTimestamp().str() << endl;
+    EV << "Next Event 2 " << classModeChangeEvent->getArrivalTime().str() << endl;
+    simtime_t lastChangeEvent = classModeChangeEvent->getArrivalTime();
+    EV << "1" << endl;
+//    classModeChangeEvent->getArrivalTime();
     const_cast<HTBScheduler *>(this)->cancelEvent(classModeChangeEvent);
+    EV << "2" << endl;
     int fullSize = 0;  // Number of all packets in the queue
     int dequeueSize = 0; // Number of packets available for dequeueing
     int leafId = 0; // Id of the leaf/queue
+    EV << "3" << endl;
     simtime_t changeTime = simTime() + SimTime(100000, SIMTIME_NS);; // Time at which we expect the next change of class mode
+    EV << "4" << endl;
     for (auto collection : collections) { // Iterate over all leaf queues
+        EV << "5 LeafID: " << leafId << endl;
         if (leafClasses.at(leafId) == nullptr) { // Leafs need to exist. If they don't, we've done sth. wrong :)
             throw cRuntimeError("There is no leaf at index %i!", leafId);
         }
+        EV << "6" << endl;
         long long diff = (long long) std::min((simTime() - leafClasses.at(leafId)->checkpointTime).inUnit(SIMTIME_NS), (int64_t)leafClasses.at(leafId)->mbuffer);
+        EV << "7" << endl;
         int currClassMode = const_cast<HTBScheduler *>(this)->classMode(leafClasses.at(leafId), &diff);
-        EV << "Class " << leafClasses.at(leafId)->name << " is in mode: " << currClassMode << endl;
+        EV << "8 Class " << leafClasses.at(leafId)->name << " is in mode: " << currClassMode << endl;
         if (currClassMode != cant_send) { // The case when there are packets available at leaf for dequeuing
             bool parentOk = false;
             htbClass *parent = leafClasses.at(leafId)->parent;
@@ -349,7 +360,7 @@ int HTBScheduler::getNumPackets() const
 
     EV << "Curr num packets to dequeue: " << dequeueSize << "; All packets: " << fullSize << endl;
     if (dequeueSize == 0 && fullSize > 0 && changeTime > simTime()) { // We have packets in queue, just none are available for dequeue!
-
+        EV << "Next Event will be scheduled at " << changeTime.str() << endl;
         const_cast<HTBScheduler *>(this)->scheduleAt(changeTime, classModeChangeEvent);  // schedule an Omnet event on when we expect things to change.
     }
     return dequeueSize;
@@ -451,7 +462,7 @@ void HTBScheduler::deactivateClass(htbClass *cl, int priority) {
 
 // Inform the htb about a newly enqueued packet. Enqueueing is actually done in the classifier.
 void HTBScheduler::htbEnqueue(int index, Packet *packet) {
-    int packetLen = packet->getByteLength();
+    int packetLen = packet->getByteLength() + 7;
     EV_INFO << "HTBScheduler: htbEnqueue " << index << "; Enqueue " << packetLen << " bytes." << endl;
     htbClass *currLeaf = leafClasses.at(index);
 //    currLeaf->leaf.queueLevel += packetLen; //TODO: Take care of dropped packets!!!! Queue overflow or so...
@@ -525,10 +536,10 @@ int HTBScheduler::htbDequeue(int priority, int level) {
     } while (cl != start);
 
     if (thePacketToPop != nullptr) {
-        EV_INFO << "HTBScheduler: htbDequeue " << retIndex << "; Dequeue " << thePacketToPop->getByteLength() << " bytes." << endl;
+        EV_INFO << "HTBScheduler: htbDequeue " << retIndex << "; Dequeue " << thePacketToPop->getByteLength() + 7 << " bytes." << endl;
 //        cl->leaf.queueLevel -= thePacketToPop->getByteLength();
 //        emit(cl->leaf.queueLvl, cl->leaf.queueLevel);
-        cl->leaf.deficit[level] -= thePacketToPop->getByteLength();
+        cl->leaf.deficit[level] -= (thePacketToPop->getByteLength() + 7);
         emit(cl->leaf.deficitSig[level], cl->leaf.deficit[level]);
         if (cl->leaf.deficit[level] < 0) {
             cl->leaf.deficit[level] += cl->quantum;
@@ -865,17 +876,22 @@ void HTBScheduler::htbAddToWaitTree(htbClass *cl, long long delay) {
     std::pair<std::set<htbClass*, waitComp>::iterator,bool> ret;
     printLevel(levels[cl->level], cl->level);
     ret = levels[cl->level]->waitingClasses.insert(cl);
+    int counter = 0;
     while (!ret.second) {
+        counter += 1;
         EV << "Class " << cl->name << " could not be inserted to level " << cl->level << " wait queue!" << endl;
-        cl->nextEventTime = simTime() + SimTime(delay+1, SIMTIME_NS);
+        cl->nextEventTime = simTime() + SimTime(delay+counter, SIMTIME_NS);
         ret = levels[cl->level]->waitingClasses.insert(cl);
+        if (counter > 1000) { // Leafs need to exist. If they don't, we've done sth. wrong :)
+            throw cRuntimeError("Scheduling 1000 events at one time is not a good idea. Something is wrong!");
+        }
     }
     printLevel(levels[cl->level], cl->level);
 
 }
 
 void HTBScheduler::chargeClass(htbClass *leafCl, int borrowLevel, Packet *packetToDequeue) {
-    long long bytes = (long long) packetToDequeue->getByteLength();
+    long long bytes = (long long) packetToDequeue->getByteLength() + 7;
     int old_mode;
     long long diff;
 

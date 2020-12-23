@@ -170,12 +170,12 @@ def extractAll(testName, nodeTypes, nodeSplit, numSlices):
         # extractRTO(testName, numCLI, nodeTypes, nodeSplit, 'serverSSH', -1)
     
     # Extract additional data for VoIP application
-    # if 'hostVIP' in nodeTypes:
-        # extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'endToEndDelay', 'E2ED', 'e2ed')
-        # extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'packetLossRate', 'PkLR', 'pklr')
-        # extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'playoutDelay', 'PlDel', 'pldel')
-        # extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'playoutLossRate', 'PlLR', 'pllr')
-        # extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'taildropLossRate', 'TDLR', 'tdlr')
+    if 'hostVIP' in nodeTypes:
+        extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'endToEndDelay', 'E2ED', 'e2ed')
+        extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'packetLossRate', 'PkLR', 'pklr')
+        extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'playoutDelay', 'PlDel', 'pldel')
+        extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'playoutLossRate', 'PlLR', 'pllr')
+        extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostVIP'], 'taildropLossRate', 'TDLR', 'tdlr')
     
     if 'hostLVD' in nodeTypes:
         extractAllDataTypeToDF(testName, numCLI, nodeTypes, nodeSplit, ['hostLVD'], 'DASHliveDelay', 'DLVD', 'dlvd')
@@ -194,7 +194,11 @@ def extractAll(testName, nodeTypes, nodeSplit, numSlices):
 # extractAll('baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,50,50,50,50], 1)
 
 # extractAll('initialTestHTB_105mbps', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1,1,1,1,1], 1)
-extractAll('initialTestHTB_105mbps_bla', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1,1,1,1,1], 1)
+# extractAll('initialTestHTB_105mbps_bla', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1,1,1,1,1], 1)
+
+# extractAll('test', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [36,36,36,50,37], 1)
+# extractAll('test2', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [33,32,33,50,33], 1)
+
 
 # extractAll('baselineTestNS_2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
 # extractAll('baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
@@ -314,3 +318,13 @@ extractAll('initialTestHTB_105mbps_bla', ['hostVID', 'hostLVD', 'hostFDO', 'host
 # extractAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha00', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
 # extractAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
 # extractAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha10', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2)
+
+
+if __name__ == "__main__":
+    name = sys.argv[3]
+    numVID = int(name.split('VID')[1].split('_LVD')[0])
+    numLVD = int(name.split('LVD')[1].split('_FDO')[0])
+    numFDO = int(name.split('FDO')[1].split('_SSH')[0])
+    numSSH = int(name.split('SSH')[1].split('_VIP')[0])
+    numVIP = int(name.split('VIP')[1])
+    extractAll(sys.argv[1], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], int(sys.argv[2]))

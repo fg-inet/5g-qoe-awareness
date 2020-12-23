@@ -64,6 +64,9 @@ class ClientQoeEstimator:
             suffix = 'Fine'
         if  self.cliType == 'hostVID':
             suffix = 'FineLong'
+            # suffix = 'Long'
+        if  self.cliType == 'hostVIP':
+            suffix = '_corrected'    
         # if self.cliType == 'hostLVD':
         #     suffix = 'FineLong'
         # if  self.cliType == 'hostVID':

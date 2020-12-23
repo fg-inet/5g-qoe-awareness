@@ -565,13 +565,13 @@ def plotTPScdfDirection(testName, numCLI, nodeTypes, nodeSplit, numSlices, direc
             maxTPS = max(tempTPSall)
         partialCDFPlotData(fig, ax1, tempTPSall, chooseName(nodeType), '-o', chooseColor(nodeType))
 
-    for sliceNum in range(numSlices):
-        tempTPSslice = []
-        colName = direction[0] + ' Throughput resAllocLink' + str(sliceNum)
-        tempTPSslice.extend([x/1000 for x in df[colName].tolist()[:int(cutoff)+1]])
-        partialCDFPlotData(fig, ax1, tempTPSslice, chooseName(str(numSlices)+'link'+str(sliceNum)), '-o', chooseColor(str(numSlices)+'link'+str(sliceNum)))
-        if maxTPS < max(tempTPSslice):
-            maxTPS = max(tempTPSslice)
+    # for sliceNum in range(numSlices):
+    #     tempTPSslice = []
+    #     colName = direction[0] + ' Throughput resAllocLink' + str(sliceNum)
+    #     tempTPSslice.extend([x/1000 for x in df[colName].tolist()[:int(cutoff)+1]])
+    #     partialCDFPlotData(fig, ax1, tempTPSslice, chooseName(str(numSlices)+'link'+str(sliceNum)), '-o', chooseColor(str(numSlices)+'link'+str(sliceNum)))
+    #     if maxTPS < max(tempTPSslice):
+    #         maxTPS = max(tempTPSslice)
 
     ax1.set_xlim(0,1.01*maxTPS)
     partialCDFEndPNG(fig,ax1,'', 'Throughput [mbps]', '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdf'+direction[0]+'ThroughputsCutoff'+ str(cutoff) + str(nodeTypes) + '.png')
@@ -792,10 +792,13 @@ def plotMosBaseSliComp(testNameBaseline, testName2sli, testName5sli, numCLI, nod
 
 def plotTPS(testName, numCLI, nodeTypes, nodeSplit, numSlices, direction, cutoff):
     global globalCounter
+    print(testName + ': Plotting ' + direction[0] + ' Throughput over time...')
     plotTPdirection(testName, numCLI, nodeTypes, nodeSplit, numSlices, direction)
     globalCounter += 1
+    print(testName + ': Plotting ' + direction[0] + ' Throughput CDF...')
     plotTPScdfDirection(testName, numCLI, nodeTypes, nodeSplit, numSlices, direction, cutoff)
     globalCounter += 1
+    print(testName + ': Plotting ' + direction[0] + ' Mean Throughput CDF...')
     plotMeanTPScdfDirection(testName, numCLI, nodeTypes, nodeSplit, direction, cutoff)
 
 def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
@@ -804,8 +807,10 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
     numCLI = sum(nodeSplit)
     if not os.path.exists('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)):
         os.makedirs('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit))
+    print(testName + ': Plotting Mean MOS CDF...')
     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
     globalCounter += 1
+    print(testName + ': Plotting MOS CDF...')
     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
     globalCounter += 1
     if compTestName != '':
@@ -832,58 +837,74 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
     # else:
     #     globalCounter += 3
     globalCounter += 3
-    # if 'hostVIP' in nodeTypes: 
-    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
-    #     globalCounter += 1
-    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
-    #     globalCounter += 1
-    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
-    #     globalCounter += 1
-    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
-    #     globalCounter += 1
-    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
-    #     globalCounter += 1
-    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'], 'PNG')
-    #     globalCounter += 1
-    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'], 'PNG')
-    #     globalCounter += 1
-    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'], 'PNG')
-    #     globalCounter += 1
-    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'], 'PNG')
-    #     globalCounter += 1
-    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'], 'PNG')
-    #     globalCounter += 1
-    # else:
-    #     globalCounter += 10
-    globalCounter += 10
+    if 'hostVIP' in nodeTypes: 
+        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
+        globalCounter += 1
+        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
+        globalCounter += 1
+        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
+        globalCounter += 1
+        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
+        globalCounter += 1
+        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
+        globalCounter += 1
+        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
+        globalCounter += 1
+        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
+        globalCounter += 1
+        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
+        globalCounter += 1
+        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
+        globalCounter += 1
+        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
+        globalCounter += 1
+    else:
+        globalCounter += 10
+    # globalCounter += 10
     if 'hostLVD' in nodeTypes:
+        print(testName + ': Plotting Live Video Delay To Live CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DLVD', 'dlvd', ['hostLVD'])
         globalCounter += 1
         if compTestName != '':
             plotDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'DLVD', 'dlvd', ['hostLVD'])
         globalCounter += 1
+        print(testName + ': Plotting Live Video Delay To Live CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DAEB', 'daeb', ['hostLVD'])
         globalCounter += 1
+        print(testName + ': Plotting Live Video Estimated Bitrate CDF...')
         plotEstimatedChosenBitrateLVD(testName, numCLI, nodeTypes, nodeSplit, ['hostLVD'])
         globalCounter += 1
     if 'hostVID' in nodeTypes and 'hostLVD' in nodeTypes:
+        print(testName + ': Plotting Video Buffer Length CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DABL', 'dabl', ['hostVID', 'hostLVD'])
         globalCounter += 1
+        print(testName + ': Plotting Chosen Video Bitrate CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DAVB', 'davb', ['hostVID', 'hostLVD'])
         globalCounter += 1
+        print(testName + ': Plotting Chosen Video Resolution CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DAVR', 'davr', ['hostVID', 'hostLVD'])
         globalCounter += 1
+        print(testName + ': Plotting Video MOS CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DAMS', 'dams', ['hostVID', 'hostLVD'])
         globalCounter += 1
     if compTestName != '':
         plotMeanTPScdfDirectionComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, downlink, cutoff)
     globalCounter += 1
+    print(testName + ': Plotting Mean End-To-End Delay CDF...')
     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'endToEndDelay', nodeTypes)
     globalCounter += 1
-    # plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'rtt', 'rtt', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH'])
-    # globalCounter += 1
+    print(testName + ': Plotting Mean RTT CDF...')
+    plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'rtt', 'rtt', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH'])
+    globalCounter += 1
+    print(testName + ': Plotting VoIP Mean End-To-End Delay CDF...')
     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'endToEndDelay', ['hostVIP'])
     globalCounter += 1
+
+
+# plotAll('test', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [36,36,36,50,37], 1, 400)
+# plotAll('test2', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [33,32,33,50,33], 1, 400)
+
+
 
 # plotAll('baselineTestNS_5sli_AlgoTest1', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
 # plotAll('baselineTestNS_5sli_AlgoTest2', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
@@ -908,7 +929,7 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
 
 
 # plotAll('initialTestHTB_105mbps', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
-plotAll('initialTestHTB_105mbps_bla', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
+# plotAll('initialTestHTB_105mbps_bla', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
 
 
 # plotAll('baselineTestNS_2sli_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
@@ -1091,3 +1112,14 @@ def plotMeanDataTypeMultiRun(testName, nodeTypes, nodeSplits, dataIdent, folderN
 # plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'Mos', 'mos', ['hostVIP'])
 # plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'E2ED', 'e2ed', ['hostVIP'])
 # plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'PkLR', 'pklr', ['hostVIP'])
+
+
+if __name__ == "__main__":
+    name = sys.argv[3]
+    numVID = int(name.split('VID')[1].split('_LVD')[0])
+    numLVD = int(name.split('LVD')[1].split('_FDO')[0])
+    numFDO = int(name.split('FDO')[1].split('_SSH')[0])
+    numSSH = int(name.split('SSH')[1].split('_VIP')[0])
+    numVIP = int(name.split('VIP')[1])
+    plotAll(sys.argv[1], '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], int(sys.argv[2]), 400)
+    # extractAll(sys.argv[1], ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], int(sys.argv[2]))

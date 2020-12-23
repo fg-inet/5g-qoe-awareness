@@ -73,7 +73,7 @@ protected:
 
     // Flags to avoid multiple quality switches when the buffer is at full capacity
     bool can_switch = true;
-    int switch_timeout = 1;
+    int switch_timeout = 3;
     int switch_timer = switch_timeout;
 
     // Other flags and guards

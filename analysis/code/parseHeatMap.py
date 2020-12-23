@@ -30,10 +30,10 @@ def makeNodeIdentifier(tp, delay):
 def importDF(testName, tp, delay):
     # File that will be read
     fullScenarioExportName = makeFullScenarioName(testName)
-    fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_hostVID0_vec.csv'
+    # fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_hostVID0_vec.csv'
     # fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_hostFDO0_vec.csv'
     # fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_vec.csv'
-    # fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_hostVIP0_vec.csv'
+    fileToRead = '../' + str(testName) + '/' + fullScenarioExportName + '/' + fullScenarioExportName + '_' + makeNodeIdentifier(tp, delay) + '_hostVIP0_vec.csv'
     print("Importing: " + fileToRead)
     # Read the CSV
     return pandas.read_csv(fileToRead)
@@ -114,5 +114,7 @@ def prepareMosValsForHeatmap(testName, tps, delays):
 # prepareMosValsForHeatmap('heatMapTest_LiveVideoFineShort', [i*20 for i in range(1,51)], [i*20 for i in range(31)])
 # prepareMosValsForHeatmap('heatMapTest_LiveVideoFineLong', [i*20 for i in range(1,51)], [i*20 for i in range(31)])
 
-prepareMosValsForHeatmap('heatMapTest_LiveVideoShort', [50+i*300 for i in range(33)], [i*20 for i in range(31)])
-prepareMosValsForHeatmap('heatMapTest_LiveVideoLong', [50+i*300 for i in range(33)], [i*20 for i in range(31)])
+# prepareMosValsForHeatmap('heatMapTest_LiveVideoShort', [50+i*300 for i in range(33)], [i*20 for i in range(31)])
+# prepareMosValsForHeatmap('heatMapTest_LiveVideoLong', [50+i*300 for i in range(33)], [i*20 for i in range(31)])
+
+prepareMosValsForHeatmap('heatMapTest_VoIP_corrected', [x for x in range(5,56)], [x*20 for x in range(0,50)])

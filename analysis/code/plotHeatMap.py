@@ -234,4 +234,6 @@ def plotHeatMapUtility(testName, cliType):
 
 # plotHeatMapUtility('heatMapTest_VideoFineLong', 'hostVID')
 
-plotHeatMapUtility('heatMapTest_FileDownloadFine', 'hostFDO')
+# plotHeatMapUtility('heatMapTest_FileDownloadFine', 'hostFDO')
+
+plotHeatMapUtility('heatMapTest_VoIP_corrected', 'hostVIP')

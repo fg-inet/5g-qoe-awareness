@@ -4,34 +4,35 @@ import numpy as np
 import delayEstimation as delEst
 import qoeEstimation as qoeEst
 
+import shutil
 
 def getBandForQoECli(host, desQoE):
     qoeEstimator = qoeEst.ClientQoeEstimator(host)
-    # print(qoeEstimator.xAxis)
-    # print(qoeEstimator.yAxis)
-    # delays = [delEst.estDelay(host, x) for x in qoeEstimator.xAxis]
     qoe = np.array([qoeEstimator.estQoEb(x) for x in qoeEstimator.yAxis])
-    # print(qoe)
     idx = np.abs(qoe - desQoE).argmin()
-    # print('Selected values for', host,':')
-    # print('\tDesired QoE:', desQoE)
-    # print('\tClosest Selected QoE:', qoe[idx])
-    # print('\tCorresponding bitrate:', qoeEstimator.yAxis[idx])
     return qoeEstimator.yAxis[idx]
-    # delayEstimator = delEst.estDelay()
-    # mosMap = np.array(qoeEstimator.mosMap)
-    # print(mosMap)
-    # qoeEstimator.xAxis
-    # qoeEstimator.yAxis
 
-    # print (np.abs(mosMap - desQoE).argmin())
-
-def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType):
+# default: ceilMultiplier = 1.25; guaranteeMultiplier = 1.0
+def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultiplier, guaranteeMultiplier):
     usedBand = 0
     numHostsPerType = {}
     reqBitratesPerType = {}
     for host in cliTypes:
-        reqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)
+        # Use 600 kbps for VoIP
+        # if host == 'hostVIP':
+        #     reqBitratesPerType[host] = 600.0
+        # else:
+        
+        # Do with median or second highest bitrate for video
+        # if host == 'hostVID':
+        #     reqBitratesPerType[host] = 1575.0 # Second Highest Bitrate
+        #     # reqBitratesPerType[host] = 1350.0 # Median Bitrate
+        # elif host == 'hostLVD':
+        #     reqBitratesPerType[host] = 1575.0 # Second Highest Bitrate
+        #     # reqBitratesPerType[host] = 1125.0 # Median Bitrate
+        # else:
+
+        reqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)*guaranteeMultiplier
         print('For a QoE of', desiredQoE, host, 'needs', reqBitratesPerType[host])
         numHostsPerType[host] = 0
     numSameRes = 0
@@ -42,7 +43,6 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType):
             if tryAdd < availBand and numHostsPerType[host] < maxNumCliType:
                 usedBand = tryAdd
                 numHostsPerType[host] += 1
-                # print(host, numHostsPerType[host])
         if oldBand == usedBand:
             numSameRes += 1
         else:
@@ -59,7 +59,7 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType):
         if host == 'hostFDO':
             ceilBitrates[host] = reqBitratesPerType[host]
         else:
-            ceilBitrates[host] = reqBitratesPerType[host] * 1.25
+            ceilBitrates[host] = reqBitratesPerType[host] * ceilMultiplier
 
     return numHostsPerType, reqBitratesPerType, ceilBitrates
 
@@ -125,8 +125,38 @@ def genHTBconfig(configName, linkSpeed, leafClassesConfigs):
     mydata = ET.tostring(configElem)
     myfile = open(configName+"HTB.xml", "wb")
     myfile.write(mydata)
+    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+
+# {leafName:[assuredRate, ceilRate, priority, queueNum, parentId, level]}
+# {innerName:[assuredRate, ceilRate, parentId, level]}
+def genHTBconfigWithInner(configName, linkSpeed, leafClassesConfigs, innerClassesConfigs, numLevels):
+
+    configElem = ET.Element('config')
+    prepareHTBClassXML(configElem, 'root', '', 'NULL', str(linkSpeed), str(linkSpeed), '1600', '1600', str(numLevels), '1600', '60', '', '')
+    
+    for inner in innerClassesConfigs:
+        print(inner)
+        prepareHTBClassXML(configElem, 'inner', inner, str(innerClassesConfigs[inner][2]), str(innerClassesConfigs[inner][0]), str(innerClassesConfigs[inner][1]), '1600', '1600', str(innerClassesConfigs[inner][3]), '1600', '60', '', '')
+    
+    for leaf in leafClassesConfigs:
+        prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), str(leafClassesConfigs[leaf][0]), str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
+    
+    
+    # prepareHTBClassXML(configElem, 'leaf', 'Two', 'root', '2000', '5000', '1600', '1600', '0', '1600', '60', '0', '1')
+
+    # create a new XML file with the results
+    mydata = ET.tostring(configElem)
+    myfile = open(configName+"HTB.xml", "wb")
+    myfile.write(mydata)
+    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
 
 # genHTBconfig('stasTest10a', 10000, {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]})
+
+def makeIPhostNum(ipPrefix, hostNum):
+    ipString = ipPrefix + '.'
+    ipString += str(hostNum // 64) + '.'
+    ipString += str(4*hostNum % 256)
+    return ipString
 
 def genBaselineRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes):
     configElem = ET.Element('config')
@@ -135,12 +165,12 @@ def genBaselineRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, se
             interfaceElem = ET.SubElement(configElem, 'interface')
             interfaceElem.set('hosts', host+'['+str(num)+']')
             interfaceElem.set('names', 'ppp0')
-            interfaceElem.set('address', hostIPprefixes[host]+'.0.'+str(4*num))
+            interfaceElem.set('address', makeIPhostNum(hostIPprefixes[host],num))
             interfaceElem.set('netmask', '255.255.255.252')
         interfaceElem = ET.SubElement(configElem, 'interface')
         interfaceElem.set('hosts', 'router0')
         interfaceElem.set('towards', host+'[*]')
-        interfaceElem.set('address', hostIPprefixes[host]+'.0.x')
+        interfaceElem.set('address', hostIPprefixes[host]+'.x.x')
         interfaceElem.set('netmask', '255.255.255.252')
     
     for server in serverTypes:
@@ -162,10 +192,12 @@ def genBaselineRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, se
     mydata = ET.tostring(configElem)
     myfile = open(configName+"Routing.xml", "wb")
     myfile.write(mydata)
+    shutil.copy2(configName+"Routing.xml", '../5gNS/simulations/configs/baseQoS')
+
 
 # genBaselineRoutingConfig('stasTest10a', ['hostFDO'], [2], {'hostFDO':'10.3'}, ['serverFDO'],  {'serverFDO':'10.6'})
 
-def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availBand):
+def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier):
     sumHosts = 0
 
     packFilters = '\"'
@@ -177,8 +209,8 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
         sumHosts += numHostsType
         for num in range(numHostsType):
             packFilters += '*;'
-            packDataFiltersR0 += 'sourceAddress(' + hostIPprefixes[host]+'.0.'+str(4*num) + ');'
-            packDataFiltersR1 += 'destinationAddress(' + hostIPprefixes[host]+'.0.'+str(4*num) + ');'
+            packDataFiltersR0 += 'sourceAddress(' + makeIPhostNum(hostIPprefixes[host],num) + ');'
+            packDataFiltersR1 += 'destinationAddress(' + makeIPhostNum(hostIPprefixes[host],num) + ');'
 
 
     packFilters = packFilters[:-1]
@@ -191,7 +223,7 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     
 
     configString = '[Config ' + confName + ']\n'
-    configString += 'description = \"Configuration for ' + confName + '. All five applications. No slicing. QoS employed.\"\n\n'
+    configString += 'description = \"Configuration for ' + confName + '. All five applications. QoS employed. Guarantee Multiplier: ' + str(guaranteeMultiplier) + '; Ceil multiplier: ' + str(ceilMultiplier) +'\"\n\n'
     configString += 'extends = ' + base + '\n\n'
     configString += '*.configurator.config = xmldoc(\"configs/baseQoS/' + confName + 'Routing.xml\")\n\n'
     configString += '*.nVID = ' + str(numHostsPerType['hostVID']) + ' # Number of video clients\n'
@@ -201,6 +233,7 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     configString += '*.nVIP = ' + str(numHostsPerType['hostVIP']) + ' # Number of VoIP clients\n\n'
     configString += '*.router*.ppp[0].ppp.queue.typename = \"HTBQueue\"\n'
     configString += '*.router*.ppp[0].ppp.queue.numQueues = ' + str(sumHosts) + '\n'
+    configString += '*.router*.ppp[0].ppp.queue.queue[*].typename = \"DropTailQueue\"\n'
     configString += '*.router*.ppp[0].ppp.queue.htbHysterisis = false\n'
     configString += '*.router*.ppp[0].ppp.queue.htbTreeConfig = xmldoc(\"configs/htbTree/' + confName + 'HTB.xml\")\n'
     configString += '*.router*.ppp[0].ppp.queue.classifier.defaultGateIndex = 0\n'
@@ -208,18 +241,22 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     configString += '*.router0.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR0 + '\n'
     configString += '*.router1.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR1 + '\n\n'
 
-    configString += '**.connFIX0.datarate = ' + str(availBand) + 'Mbps\n'
+    configString += '**.connFIX0.datarate = ' + str(availBand) + 'Mbps\n\n\n'
     f = open(confName+".txt", "w")
     f.write(configString)
     f.close()
+
+    f2 = open('../5gNS/simulations/htbSimpleTest.ini', 'a')
+    f2.write(configString)
+    f2.close()
     # print(configString)
 
 # genBaselineIniConfig('stasTest10a', 'baselineTestTokenQoS_base', {'hostVIP' : 5, 'hostSSH' : 5, 'hostVID' : 5, 'hostLVD' : 5, 'hostFDO' : 5}, {'hostVIP' : '10.1', 'hostSSH' : '10.2', 'hostVID' : '10.3', 'hostLVD' : '10.4', 'hostFDO' : '10.5'}, 100)
 
-def genAllBaselineConfigsRun(configName, baseName, availBand, desiredQoE, types, maxNumCliType):
+def genAllBaselineConfigsRun(configName, baseName, availBand, desiredQoE, types, maxNumCliType, ceilMultiplier, guaranteeMultiplier):
     cliTypes = ['host'+x for x in types]
     serverTypes = ['server'+x for x in types]
-    numHostsPerType, reqBitratesPerType, ceilBitrates = simpleAdmission(availBand*1000, desiredQoE, cliTypes, maxNumCliType)
+    numHostsPerType, reqBitratesPerType, ceilBitrates = simpleAdmission(availBand*1000, desiredQoE, cliTypes, maxNumCliType, ceilMultiplier, guaranteeMultiplier)
     print(numHostsPerType, reqBitratesPerType, ceilBitrates)
     # {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]}
     leafClassesConfigs = {}
@@ -240,6 +277,301 @@ def genAllBaselineConfigsRun(configName, baseName, availBand, desiredQoE, types,
     genHTBconfig(configName, availBand*1000, leafClassesConfigs)
     hostNums = [numHostsPerType[x] for x in numHostsPerType]
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
-    genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand)
+    genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-genAllBaselineConfigsRun('test', 'baselineTestTokenQoS_base', 100, 3.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 50)
+    f2 = open('../5gNS/simulations/runCommands.txt', 'a+')
+    f2.write('./runAndExportSimConfig.sh -i htbSimpleTest.ini -c ' + configName + ' -s 1\n')
+    f2.close()
+
+# genAllBaselineConfigsRun('test', 'baselineTestTokenQoS_base', 100, 3.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 50)
+# genAllBaselineConfigsRun('test2', 'baselineTestTokenQoS_base', 100, 3.5, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 50)
+# genAllBaselineConfigsRun('test3', 'baselineTestTokenQoS_base', 100, 4.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 50)
+
+# genAllBaselineConfigsRun('test5', 'baselineTestTokenQoS_base', 200, 3.5, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 100, 1.25, 1.0)
+# genAllBaselineConfigsRun('test6', 'baselineTestTokenQoS_base', 200, 4.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], 100)
+
+
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+#################################################################################################################################################
+
+
+def genSliRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes, hostToSlice):
+    configElem = ET.Element('config') # The config part
+    for host,nums in zip(hostTypes, hostNums): # for each host type
+        for num in range(nums): # for each host from the host type
+            # Assign host IP
+            interfaceElem = ET.SubElement(configElem, 'interface')
+            interfaceElem.set('hosts', host+'['+str(num)+']')
+            interfaceElem.set('names', 'ppp0')
+            interfaceElem.set('address', makeIPhostNum(hostIPprefixes[host],num))
+            interfaceElem.set('netmask', '255.255.255.252')
+
+        # Assign router IPs (all towards the hosts of type!!!)
+        interfaceElem = ET.SubElement(configElem, 'interface')
+        interfaceElem.set('hosts', 'router0')
+        interfaceElem.set('towards', host+'[*]')
+        interfaceElem.set('address', hostIPprefixes[host]+'.x.x')
+        interfaceElem.set('netmask', '255.255.255.252')
+
+        # Configure host route towards server
+        routeElem = ET.SubElement(configElem, 'route')
+        routeElem.set('hosts', host+'[*]')
+        routeElem.set('destination', serverIPprefixes['server'+host[-3:]]+'.0.0')
+        routeElem.set('netmask', '255.255.0.0')
+        routeElem.set('interface', 'ppp0')
+        routeElem.set('metric', '100')
+
+    for server in serverTypes: # for each server
+        # Assign server IP
+        interfaceElem = ET.SubElement(configElem, 'interface')
+        interfaceElem.set('hosts', server)
+        interfaceElem.set('names', 'ppp0')
+        interfaceElem.set('address', serverIPprefixes[server]+'.x.x')
+        interfaceElem.set('netmask', '255.255.255.252')
+
+        # Assign router IP towards server
+        interfaceElem = ET.SubElement(configElem, 'interface')
+        interfaceElem.set('hosts', 'router1')
+        interfaceElem.set('towards', server)
+        interfaceElem.set('address', serverIPprefixes[server]+'.x.x')
+        interfaceElem.set('netmask', '255.255.255.252')
+
+        # Configure server route towards hosts
+        routeElem = ET.SubElement(configElem, 'route')
+        routeElem.set('hosts', server)
+        routeElem.set('destination', hostIPprefixes['host'+server[-3:]]+'.0.0')
+        routeElem.set('netmask', '255.255.0.0')
+        routeElem.set('interface', 'ppp0')
+        routeElem.set('metric', '100')
+    
+    for routerNum in range(2): # For both routers
+        for sliceNum in range(len(hostToSlice)): # For 2 slices
+            # Configure IP for slice on router
+            interfaceElem = ET.SubElement(configElem, 'interface')
+            interfaceElem.set('hosts', 'router'+str(routerNum))
+            interfaceElem.set('names', 'ppp'+str(sliceNum))
+            interfaceElem.set('address', '10.' + str(20+sliceNum) + '.' + str(20+sliceNum) + '.' + str(routerNum))
+            interfaceElem.set('netmask', '255.255.255.252')
+            
+            for hts in hostToSlice[sliceNum]:
+                routeElem = ET.SubElement(configElem, 'route')
+                routeElem.set('hosts', 'router'+str(routerNum))
+                if routerNum == 0:
+                    routeElem.set('destination', serverIPprefixes['server'+hts]+'.0.0')
+                elif routerNum == 1:
+                    routeElem.set('destination', hostIPprefixes['host'+hts]+'.0.0')
+                routeElem.set('netmask', '255.255.0.0')
+                routeElem.set('interface', 'ppp'+str(sliceNum))
+                routeElem.set('gateway', '10.'+ str(20+sliceNum) + '.' + str(20+sliceNum) + '.' + str((routerNum+1)%2))
+                routeElem.set('metric', '100')
+    
+    # create a new XML file with the results
+    mydata = ET.tostring(configElem)
+    myfile = open(configName+str(len(hostToSlice))+'sliRouting.xml', "wb")
+    myfile.write(mydata)
+    shutil.copy2(configName+str(len(hostToSlice))+'sliRouting.xml', '../5gNS/simulations/configs/baseQoS')
+
+
+
+# genSliRoutingConfig('test2sli', ['hostVIP', 'hostSSH', 'hostVID', 'hostLVD', 'hostFDO'], [5, 5, 5, 5, 5], {'hostVIP' : '10.1', 'hostSSH' : '10.2', 'hostVID' : '10.3', 'hostLVD' : '10.4', 'hostFDO' : '10.5'}, ['serverVIP', 'serverSSH', 'serverVID', 'serverLVD', 'serverFDO'], {'serverVIP' : '10.11', 'serverSSH' : '10.12', 'serverVID' : '10.13', 'serverLVD' : '10.14', 'serverFDO' : '10.15'}, [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']])
+# genSliRoutingConfig('test5sli', ['hostVIP', 'hostSSH', 'hostVID', 'hostLVD', 'hostFDO'], [5, 5, 5, 5, 5], {'hostVIP' : '10.1', 'hostSSH' : '10.2', 'hostVID' : '10.3', 'hostLVD' : '10.4', 'hostFDO' : '10.5'}, ['serverVIP', 'serverSSH', 'serverVID', 'serverLVD', 'serverFDO'], {'serverVIP' : '10.11', 'serverSSH' : '10.12', 'serverVID' : '10.13', 'serverLVD' : '10.14', 'serverFDO' : '10.15'}, [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']])
+# genHTBconfig('test2sliSlice0', 80000, {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]})
+
+# genBaselineRoutingConfig('stasTest10a', ['hostFDO'], [2], {'hostFDO':'10.3'}, ['serverFDO'],  {'serverFDO':'10.6'})
+
+def genSliIniConfig(confName, base, numHostsPerType, hostIPprefixes, availBands, ceilMultiplier, guaranteeMultiplier, hostToSlice):
+    configString = '[Config ' + confName + ']\n'
+    configString += 'description = \"Configuration for ' + confName + '. All five applications. No slicing. QoS employed. Guarantee Multiplier: ' + str(guaranteeMultiplier) + '; Ceil multiplier: ' + str(ceilMultiplier) +'\"\n\n'
+    configString += 'extends = ' + base + '\n\n'
+    configString += '*.configurator.config = xmldoc(\"configs/baseQoS/' + confName + str(len(hostToSlice)) + 'sliRouting.xml\")\n\n'
+    configString += '*.nVID = ' + str(numHostsPerType['hostVID']) + ' # Number of video clients\n'
+    configString += '*.nLVD = ' + str(numHostsPerType['hostLVD']) + ' # Number of live video client\n'
+    configString += '*.nFDO = ' + str(numHostsPerType['hostFDO']) + ' # Number of file download clients\n'
+    configString += '*.nSSH = ' + str(numHostsPerType['hostSSH']) + ' # Number of SSH clients\n'
+    configString += '*.nVIP = ' + str(numHostsPerType['hostVIP']) + ' # Number of VoIP clients\n\n'
+
+    for sliNum in range(len(hostToSlice)):
+        sumHostsSli = 0
+        packFilters = '\"'
+        packDataFiltersR0 = '\"'
+        packDataFiltersR1 = '\"'
+
+        for hType in hostToSlice[sliNum]:
+            host = 'host'+hType
+            numHostsType = numHostsPerType[host]
+            sumHostsSli += numHostsType
+            for num in range(numHostsType):
+                packFilters += '*;'
+                packDataFiltersR0 += 'sourceAddress(' + makeIPhostNum(hostIPprefixes[host],num) + ');'
+                packDataFiltersR1 += 'destinationAddress(' + makeIPhostNum(hostIPprefixes[host],num) + ');'
+
+
+        packFilters = packFilters[:-1]
+        packDataFiltersR0 = packDataFiltersR0[:-1]
+        packDataFiltersR1 = packDataFiltersR1[:-1]
+
+        packFilters += '\"'
+        packDataFiltersR0 += '\"'
+        packDataFiltersR1 += '\"'
+
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.typename = \"HTBQueue\"\n'
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.numQueues = ' + str(sumHostsSli) + '\n'
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.htbHysterisis = false\n'
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.htbTreeConfig = xmldoc(\"configs/htbTree/' + confName + 'Slice' + str(sliNum) + 'HTB.xml\")\n'
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.classifier.defaultGateIndex = 0\n'
+        configString += '*.router*.ppp[' + str(sliNum) + '].ppp.queue.classifier.packetFilters = ' + packFilters + '\n'
+        configString += '*.router0.ppp[' + str(sliNum) + '].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR0 + '\n'
+        configString += '*.router1.ppp[' + str(sliNum) + '].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR1 + '\n\n'
+
+    for sliName in availBands:
+        configString += '**.' + sliName + '.datarate = ' + str(int(availBands[sliName])) + 'kbps\n'
+
+    configString += '\n\n'
+
+    f = open(confName+".txt", "w")
+    f.write(configString)
+    f.close()
+
+    f2 = open('../5gNS/simulations/htbQoSNS.ini', 'a')
+    f2.write(configString)
+    f2.close()
+
+    # print(configString)
+
+# genBaselineIniConfig('stasTest10a', 'baselineTestTokenQoS_base', {'hostVIP' : 5, 'hostSSH' : 5, 'hostVID' : 5, 'hostLVD' : 5, 'hostFDO' : 5}, {'hostVIP' : '10.1', 'hostSSH' : '10.2', 'hostVID' : '10.3', 'hostLVD' : '10.4', 'hostFDO' : '10.5'}, 100)
+
+def genAllSliConfigsRun(configName, baseName, availBand, desiredQoE, types, hostToSlice, sliceNames, maxNumCliType, ceilMultiplier, guaranteeMultiplier):
+    cliTypes = ['host'+x for x in types]
+    serverTypes = ['server'+x for x in types]
+    numHostsPerType, reqBitratesPerType, ceilBitrates = simpleAdmission(availBand*1000, desiredQoE, cliTypes, maxNumCliType, ceilMultiplier, guaranteeMultiplier)
+    print(numHostsPerType, reqBitratesPerType, ceilBitrates)
+    # {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]}
+    # leafClassesConfigs = {}
+    hostIPprefixes = {}
+    serverIPprefixes = {}
+    # queueInt = 0
+    prefIPno = 0
+    for host in cliTypes:
+        # for num in range(numHostsPerType[host]):
+        #     leafClassesConfigs[host+str(num)] = [reqBitratesPerType[host], ceilBitrates[host], 0, queueInt]
+        #     queueInt += 1
+        hostIPprefixes[host] = '10.'+str(prefIPno)
+        prefIPno += 1
+    prefIPno = 0
+    for server in serverTypes:
+        serverIPprefixes[server] = '10.'+str(prefIPno+10)
+        prefIPno += 1
+    availBands = {}
+    for sliNum in range(len(hostToSlice)):
+        leafClassesConfigs = {}
+        queueInt = 0
+        sumGuaranteesBandSli = 0
+        for hType in hostToSlice[sliNum]:
+            host = 'host'+hType
+            for num in range(numHostsPerType[host]):
+                leafClassesConfigs[host+str(num)] = [reqBitratesPerType[host], ceilBitrates[host], 0, queueInt]
+                queueInt += 1
+            sumGuaranteesBandSli += reqBitratesPerType[host] * numHostsPerType[host]
+            availBands[sliceNames[sliNum]] = sumGuaranteesBandSli
+        genHTBconfig(configName + 'Slice' + str(sliNum), sumGuaranteesBandSli, leafClassesConfigs)
+    hostNums = [numHostsPerType[x] for x in numHostsPerType]
+    genSliRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes, hostToSlice)
+    genSliIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBands, ceilMultiplier, guaranteeMultiplier, hostToSlice)
+
+    f2 = open('../5gNS/simulations/runCommands.txt', 'a+')
+    f2.write('./runAndExportSimConfig.sh -i htbQoSNS.ini -c ' + configName + ' -s ' + str(len(hostToSlice)) + '\n')
+    f2.close()
+
+
+def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, hostToSlice, sliceNames, maxNumCliType, ceilMultiplier, guaranteeMultiplier):
+    cliTypes = ['host'+x for x in types]
+    serverTypes = ['server'+x for x in types]
+    numHostsPerType, reqBitratesPerType, ceilBitrates = simpleAdmission(availBand*1000, desiredQoE, ['host'+x for x in types], maxNumCliType, ceilMultiplier, guaranteeMultiplier)
+    print(numHostsPerType, reqBitratesPerType, ceilBitrates)
+    # {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]}
+    # leafClassesConfigs = {}
+    hostIPprefixes = {}
+    serverIPprefixes = {}
+    # queueInt = 0
+    
+    # availBands = {}
+    leafClassesConfigs = {}
+    innerClassConfigs = {}
+    queueInt = 0
+    # {leafName:[assuredRate, ceilRate, priority, queueNum, parentId, level]}
+    # {innerName:[assuredRate, ceilRate, parentId, level]}
+    numLev = 2
+    for sliNum in range(len(hostToSlice)):
+        sumGuaranteesBandSli = 0
+        parentName = 'inner'+sliceNames[sliNum]
+        if sliceNames[sliNum] == 'connFIX0':
+            parentName = 'root'
+            numLev = 1
+        for hType in hostToSlice[sliNum]:
+            host = 'host'+hType
+            # cliTypes.append(host)
+            # serverTypes.append('server'+hType)
+            for num in range(numHostsPerType[host]):
+                print(host+str(num))
+                leafClassesConfigs[host+str(num)] = [reqBitratesPerType[host], ceilBitrates[host], 0, queueInt, parentName, 0]
+                queueInt += 1
+            sumGuaranteesBandSli += reqBitratesPerType[host] * numHostsPerType[host]
+            # availBands[sliceNames[sliNum]] = sumGuaranteesBandSli
+        if sliceNames[sliNum] != 'connFIX0':
+            print('Hmm...')
+            innerClassConfigs[sliceNames[sliNum]] = [sumGuaranteesBandSli, sumGuaranteesBandSli*ceilMultiplier, 'root', 1]
+
+    prefIPno = 0
+    for host in cliTypes:
+        # for num in range(numHostsPerType[host]):
+        #     leafClassesConfigs[host+str(num)] = [reqBitratesPerType[host], ceilBitrates[host], 0, queueInt]
+        #     queueInt += 1
+        hostIPprefixes[host] = '10.'+str(prefIPno)
+        prefIPno += 1
+    prefIPno = 0
+    for server in serverTypes:
+        serverIPprefixes[server] = '10.'+str(prefIPno+10)
+        prefIPno += 1
+
+    genHTBconfigWithInner(configName, availBand*1000, leafClassesConfigs, innerClassConfigs, numLev)
+    hostNums = [numHostsPerType[x] for x in numHostsPerType]
+    genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
+    genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
+
+    f2 = open('../5gNS/simulations/runCommands.txt', 'a+')
+    f2.write('./runAndExportSimConfig.sh -i htbSimpleTest.ini -c ' + configName + ' -s 1\n')
+    f2.close()
+
+
+# genAllSliConfigsRun('testSlia1', 'htbQoSNS_2sli_base', 20, 4.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], 100, 1.25, 1.0)
+# genAllSliConfigsRun('testSlia2', 'htbQoSNS_5sli_base', 20, 4.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], 100, 1.25, 1.0)
+
+
+# targetQoE = [4.0, 3.5, 3.0]
+# assuredMulti = [1.0]
+# rates = [100, 200]
+# maxCliRate = [50, 100]
+# ceils = [1.0, 1.1, 1.25, 1.4]
+targetQoE = [4.0]
+assuredMulti = [1.0]
+rates = [20]
+maxCliRate = [50]
+ceils = [1.25]
+for rate, maxCli in zip(rates, maxCliRate):
+    for qoE in targetQoE:
+        for mult in assuredMulti:
+            for ceil in ceils:
+                genAllSliConfigsHTBRun('htbQoSBaseTest4_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult)
+                genAllSliConfigsHTBRun('htbQoSNSTest4_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult)
+                genAllSliConfigsHTBRun('htbQoSNSTest4_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult)
