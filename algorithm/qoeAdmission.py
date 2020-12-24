@@ -529,7 +529,6 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
             sumGuaranteesBandSli += reqBitratesPerType[host] * numHostsPerType[host]
             # availBands[sliceNames[sliNum]] = sumGuaranteesBandSli
         if sliceNames[sliNum] != 'connFIX0':
-            print('Hmm...')
             innerClassConfigs[sliceNames[sliNum]] = [sumGuaranteesBandSli, sumGuaranteesBandSli*ceilMultiplier, 'root', 1]
 
     prefIPno = 0
@@ -558,20 +557,20 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # genAllSliConfigsRun('testSlia2', 'htbQoSNS_5sli_base', 20, 4.0, ['VIP', 'SSH', 'VID', 'LVD', 'FDO'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], 100, 1.25, 1.0)
 
 
-# targetQoE = [4.0, 3.5, 3.0]
-# assuredMulti = [1.0]
-# rates = [100, 200]
-# maxCliRate = [50, 100]
-# ceils = [1.0, 1.1, 1.25, 1.4]
-targetQoE = [4.0]
+targetQoE = [4.0, 3.5, 3.0]
 assuredMulti = [1.0]
-rates = [20]
-maxCliRate = [50]
-ceils = [1.25]
+rates = [100, 200]
+maxCliRate = [50, 100]
+ceils = [1.0, 1.1, 1.25, 1.4]
+# targetQoE = [4.0]
+# assuredMulti = [1.0]
+# rates = [20]
+# maxCliRate = [50]
+# ceils = [1.25]
 for rate, maxCli in zip(rates, maxCliRate):
     for qoE in targetQoE:
         for mult in assuredMulti:
             for ceil in ceils:
-                genAllSliConfigsHTBRun('htbQoSBaseTest4_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult)
-                genAllSliConfigsHTBRun('htbQoSNSTest4_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult)
-                genAllSliConfigsHTBRun('htbQoSNSTest4_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult)
+                genAllSliConfigsHTBRun('htbQoSno1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult)
+                genAllSliConfigsHTBRun('htbQoSNno2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult)
+                genAllSliConfigsHTBRun('htbQoSNno3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'baselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult)
