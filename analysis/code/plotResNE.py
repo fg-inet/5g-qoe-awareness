@@ -837,30 +837,30 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
     # else:
     #     globalCounter += 3
     globalCounter += 3
-    if 'hostVIP' in nodeTypes: 
-        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
-        globalCounter += 1
-        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
-        globalCounter += 1
-        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
-        globalCounter += 1
-        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
-        globalCounter += 1
-        plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
-        globalCounter += 1
-        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
-        globalCounter += 1
-        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
-        globalCounter += 1
-        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
-        globalCounter += 1
-        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
-        globalCounter += 1
-        plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
-        globalCounter += 1
-    else:
-        globalCounter += 10
-    # globalCounter += 10
+    # if 'hostVIP' in nodeTypes: 
+    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'e2ed', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PkLR', 'pklr', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlDel', 'pldel', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'PlLR', 'pllr', ['hostVIP'])
+    #     globalCounter += 1
+    #     plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'TDLR', 'tdlr', ['hostVIP'])
+    #     globalCounter += 1
+    # else:
+    #     globalCounter += 10
+    globalCounter += 10
     if 'hostLVD' in nodeTypes:
         print(testName + ': Plotting Live Video Delay To Live CDF...')
         plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'DLVD', 'dlvd', ['hostLVD'])
