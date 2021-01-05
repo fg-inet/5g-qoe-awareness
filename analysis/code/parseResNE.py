@@ -1,7 +1,7 @@
 import pandas
 import csv
 import statistics
-from termcolor import colored
+# from termcolor import colored
 import sys
 import os
 

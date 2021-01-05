@@ -808,15 +808,15 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
     if not os.path.exists('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)):
         os.makedirs('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit))
     print(testName + ': Plotting Mean MOS CDF...')
-    plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
+    plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos2', nodeTypes)
     globalCounter += 1
     print(testName + ': Plotting MOS CDF...')
-    plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
+    plotDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos2', nodeTypes)
     globalCounter += 1
     if compTestName != '':
-        plotMeanDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
+        plotMeanDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos2', nodeTypes)
         globalCounter += 1
-        plotDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos', nodeTypes)
+        plotDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'Mos', 'mos2', nodeTypes)
         globalCounter += 1
         plotMeanDataTypeCdfAllAppsComp(testName, compTestName, numCLI, nodeTypes, nodeSplit, 'E2ED', 'endToEndDelay', nodeTypes)
         globalCounter += 1
@@ -901,218 +901,7 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
     globalCounter += 1
 
 
-# plotAll('test', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [36,36,36,50,37], 1, 400)
-# plotAll('test2', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [33,32,33,50,33], 1, 400)
-
-
-
-# plotAll('baselineTestNS_5sli_AlgoTest1', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNS_5sli_AlgoTest2', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNS_2sli_LVD-DES_AlgoTest1', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest1', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_5sli_AlgoTest3', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNS_2sli_LVD-DES_AlgoTest3', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest3', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_5sli_AlgoTest1', 'baselineTestNS_5sli', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNS_5sli_AlgoTest2', 'baselineTestNS_5sli', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNS_2sli_LVD-DES_AlgoTest1', 'baselineTestNS_2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest1', 'baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-
-# plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [10 for x in range(5)], 1, 400)
-# plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20 for x in range(5)], 1, 400)
-# plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [30 for x in range(5)], 1, 400)
-# plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [40 for x in range(5)], 1, 400)
 # plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-
-
-# plotAll('initialTestHTB_105mbps', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
-# plotAll('initialTestHTB_105mbps_bla', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [1 for x in range(5)], 1, 400)
-
-
-# plotAll('baselineTestNS_2sli_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_2sliSingle_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sliSingle_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_2sliSingle2sli_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sliSingle2sli_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_2sliDouble_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sliDouble_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNS_5sli', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNS_5sliSingle', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNS_5sliSingle5sli', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNS_5sliDouble', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestTemp', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [10 for x in range(5)], 1, 400)
-
-# globalCounter = 100
-# plotMeanTPScdfDirectionComp('baselineTestNS_2sli_LVD-BWS', 'baselineTestNS_5sli', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], downlink, 400)
-# globalCounter+=1
-# plotDataTypeCdfAllAppsComp('baselineTestNS_2sli_LVD-BWS', 'baselineTestNS_5sli', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'Mos', 'mos', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
-
-# globalCounter = 100
-# plotMeanTPScdfDirectionComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], downlink, 400)
-# globalCounter +=1
-# plotDataTypeCdfAllAppsComp('baselineTest', 'baselineTestNS_2sli_LVD-BWS', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'Mos', 'mos', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
-# globalCounter += 1
-# plotMeanTPScdfDirectionComp('baselineTest', 'baselineTestNS_5sli', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], downlink, 400)
-# globalCounter +=1
-# plotDataTypeCdfAllAppsComp('baselineTest', 'baselineTestNS_5sli', 250, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 'Mos', 'mos', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'])
-
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliNBS_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNSPrioQueueAF_2sliSingle2sliNBS_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNSPrioQueueAF_2sliSingle2sli_LVD-DES', 'baselineTestNSPrioQueue_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliNBS_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDW_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-DES', 'baselineTestNS_2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-BWS', 'baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDWR_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueue_SingleDWRLQ_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_SingleDWRLQ_LVD-BWS', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueueDES_2sliSingle2sli_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueueDES_2sliSingle2sli_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWR_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWR_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueueDES2_2sliSingle2sli_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueueDES2_2sliSingle2sli_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWR2_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWR2_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueueDES4_2sliSingle2sli_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueueDES4_2sliSingle2sli_LVD-BWS', 'baselineTestNS_2sliSingle2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueueAF_Single_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-# plotAll('baselineTestNSPrioQueueAF_SingleLBS_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-# plotAll('baselineTestNSPrioQueueAF_SingleNBS_LVD-DES', 'baselineTest', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWRLQ_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWRLQ_LVD-BWS', 'baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWRLQPD_LVD-DES', 'baselineTestNS_2sliSingle2sli_LVD-DES', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-# plotAll('baselineTestNSPrioQueue_2sliSingle2sliDWRLQPD_LVD-BWS', 'baselineTestNS_2sli_LVD-BWS', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 0, 400)
-
-
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH100VIP75VID20LVD5FDO50_sSSH3sVIP44sVID14sLVD2sFDO37_fairness_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,5,50,100,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH100VIP20VID75LVD5FDO50_sSSH1sVIP12sVID51sLVD6sFDO30_fairness_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,5,50,100,20], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH100VIP20VID75LVD5FDO50_sSSH1sVIP12sVID51sLVD6sFDO30_fairness_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,5,50,100,20], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH100VIP20VID50LVD5FDO75_sSSH4sVIP12sVID35sLVD6sFDO43_min_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,5,75,100,20], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH100VIP50VID20LVD5FDO75_sSSH1sVIP29sVID15sLVD6sFDO49_min_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,5,75,100,50], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH100VIP50VID20LVD5FDO75_sSSH1sVIP29sVID15sLVD6sFDO49_min_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,5,75,100,50], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH100VIP75VID20LVD5FDO50_sSSH3sVIP44sVID14sLVD2sFDO37_mean_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,5,50,100,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH100VIP75VID50LVD5FDO20_sSSH2sVIP44sVID34sLVD6sFDO14_mean_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,5,20,100,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH100VIP75VID50LVD5FDO20_sSSH1sVIP44sVID34sLVD6sFDO15_mean_max', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,5,20,100,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH50VIP75VID100LVD5FDO20_sSSH7sVIP45sVID20sLVD7sFDO21_fairness_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100,5,20,50,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH20VIP100VID75LVD5FDO50_sSSH1sVIP58sVID37sLVD3sFDO1_fairness_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,5,50,20,100], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH50VIP100VID5LVD20FDO75_sSSH1sVIP36sVID20sLVD20sFDO23_fairness_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [5,20,75,50,100], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH5VIP75VID100LVD20FDO50_sSSH1sVIP44sVID48sLVD6sFDO1_min_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100,20,50,5,75], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH20VIP100VID75LVD5FDO50_sSSH1sVIP58sVID37sLVD3sFDO1_min_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,5,50,20,100], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH5VIP50VID75LVD100FDO20_sSSH18sVIP28sVID29sLVD22sFDO3_min_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,100,20,5,50], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_0alpha_SSH5VIP100VID50LVD75FDO20_sSSH1sVIP1sVID50sLVD22sFDO26_mean_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,75,20,5,100], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_5alpha_SSH5VIP100VID75LVD20FDO50_sSSH25sVIP26sVID32sLVD6sFDO11_mean_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75,20,50,5,100], 5, 400)
-# plotAll('optimizationAlgoFairness1_5sli_10alpha_SSH5VIP75VID50LVD100FDO20_sSSH15sVIP42sVID18sLVD22sFDO3_mean_min', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50,100,20,5,75], 5, 400)
-
-
-# plotAll('baselineTestVCD_SSH100VIP75VID20LVD5FDO50', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 50, 100, 75], 1, 400)
-# plotAll('baselineTestVCD_SSH100VIP20VID75LVD5FDO50', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 100, 20], 1, 400)
-# plotAll('baselineTestVCD_SSH50VIP75VID100LVD5FDO20', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100, 5, 20, 50, 75], 1, 400)
-# plotAll('baselineTestVCD_SSH20VIP100VID75LVD5FDO50', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 20, 100], 1, 400)
-# plotAll('baselineTestVCD_SSH50VIP100VID5LVD20FDO75', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [5, 20, 75, 50, 100], 1, 400)
-# plotAll('baselineTestVCD_SSH100VIP20VID50LVD5FDO75', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 5, 75, 100, 20], 1, 400)
-# plotAll('baselineTestVCD_SSH100VIP50VID20LVD5FDO75', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 75, 100, 50], 1, 400)
-# plotAll('baselineTestVCD_SSH5VIP75VID100LVD20FDO50', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100, 20, 50, 5, 75], 1, 400)
-# plotAll('baselineTestVCD_SSH5VIP50VID75LVD100FDO20', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 100, 20, 5, 50], 1, 400)
-# plotAll('baselineTestVCD_SSH100VIP75VID50LVD5FDO20', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 5, 20, 100, 75], 1, 400)
-# plotAll('baselineTestVCD_SSH5VIP100VID50LVD75FDO20', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 75, 20, 5, 100], 1, 400)
-# plotAll('baselineTestVCD_SSH5VIP100VID75LVD20FDO50', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 20, 50, 5, 100], 1, 400)
-# plotAll('baselineTestVCD_SSH5VIP75VID50LVD100FDO20', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 100, 20, 5, 75], 1, 400)
-
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH100VIP75VID20LVD5FDO50_sDES46sBWS54_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 50, 100, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH100VIP20VID75LVD5FDO50_sDES14sBWS86_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 100, 20], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH100VIP20VID75LVD5FDO50_sDES14sBWS86_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 100, 20], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH50VIP75VID100LVD5FDO20_sDES46sBWS54_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100, 5, 20, 50, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH20VIP100VID75LVD5FDO50_sDES58sBWS42_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 20, 100], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH50VIP100VID5LVD20FDO75_sDES59sBWS41_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [5, 20, 75, 50, 100], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH100VIP20VID50LVD5FDO75_sDES15sBWS85_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 5, 75, 100, 20], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH100VIP50VID20LVD5FDO75_sDES31sBWS69_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 75, 100, 50], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH100VIP50VID20LVD5FDO75_sDES31sBWS69_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 75, 100, 50], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH5VIP75VID100LVD20FDO50_sDES47sBWS53_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [100, 20, 50, 5, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH20VIP100VID75LVD5FDO50_sDES58sBWS42_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 5, 50, 20, 100], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH5VIP50VID75LVD100FDO20_sDES18sBWS82_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 100, 20, 5, 50], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH100VIP75VID20LVD5FDO50_sDES46sBWS54_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20, 5, 50, 100, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH100VIP75VID50LVD5FDO20_sDES46sBWS54_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 5, 20, 100, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH100VIP75VID50LVD5FDO20_sDES46sBWS54_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 5, 20, 100, 75], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_0alpha_SSH5VIP100VID50LVD75FDO20_sDES60sBWS40_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 75, 20, 5, 100], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_5alpha_SSH5VIP100VID75LVD20FDO50_sDES57sBWS43_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [75, 20, 50, 5, 100], 2, 400)
-# plotAll('optimizationAlgoFairness1_2sli_LVD-BWS_10alpha_SSH5VIP75VID50LVD100FDO20_sDES43sBWS57_ndf_ndf', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50, 100, 20, 5, 75], 2, 400)
-
-# plotAll('baselineTestNS_5sli_AlgoTest_alpha00', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 5, 400)
-# plotAll('baselineTestNS_5sli_AlgoTest_alpha05', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 5, 400)
-# plotAll('baselineTestNS_5sli_AlgoTest_alpha10', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 5, 400)
-
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha00', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha05', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-# plotAll('baselineTestNS_2sli_LVD-BWS_AlgoTest_alpha10', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 2, 400)
-
-def plotMeanDataTypeMultiRun(testName, nodeTypes, nodeSplits, dataIdent, folderName, nodeTypesToPlot):
-    fig, ax1 = plt.subplots(1, figsize=(16,12))
-    meanValues = []
-    numCLIlist = []
-    for nodeSplit in nodeSplits:
-        numCLI = sum(nodeSplit)
-        df = importDF(testName, numCLI, nodeTypes, nodeSplit, folderName)
-        tempValue = []
-        for nodeType,numNodes in zip(nodeTypes,nodeSplit):
-            if nodeType in nodeTypesToPlot:
-                for nodeNum in range(numNodes):
-                    colName = makeNodeIdentifier(nodeType, nodeNum) + " " + dataIdent + " Val"
-                    tempValue.extend(df[colName].dropna().tolist())
-        if len(tempValue) > 0: meanValues.append(statistics.mean(tempValue))
-        else: meanValues.append(1)
-        numCLIlist.append(numCLI)
-    
-    ax1.plot(numCLIlist, meanValues, 'o-')
-    
-    if not os.path.exists('../exports/plots/'+makeFullScenarioName(testName, 0, nodeTypes, [0,0,0,0])):
-        os.makedirs('../exports/plots/'+makeFullScenarioName(testName, 0, nodeTypes, [0,0,0,0]))
-    
-    if dataIdent == 'Mos':
-        ax1.set_ylim(0.95,5.05)
-
-    plt.xlabel('Number of clients')
-    plt.ylabel('Mean Client ' + dataIdent + ' Value')
-    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, 0, nodeTypes, [0,0,0,0])+'/'+str(globalCounter)+'_mean' + dataIdent + str(nodeTypesToPlot) + 'vsNumCli.pdf', dpi=100, bbox_inches='tight')
-    plt.close('all')
-
-
-
-# plotMeanDataTypeMultiRun('singleAppTest_Video', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[i, 0, 0, 0] for i in range(1,14,1)], 'Mos', 'mos', ['hostVID'])
-# plotMeanDataTypeMultiRun('singleAppTest_FileDownload', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, i, 0, 0] for i in range(1,14,1)], 'Mos', 'mos', ['hostFDO'])
-
-# plotMeanDataTypeMultiRun('singleAppTest_SSH', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, i, 0] for i in [1,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200]], 'Mos', 'mos', ['hostSSH'])
-# plotMeanDataTypeMultiRun('singleAppTest_SSH', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, i, 0] for i in [1,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200]], 'RTT', 'rtt', ['hostSSH'])
-
-# plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'Mos', 'mos', ['hostVIP'])
-# plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'E2ED', 'e2ed', ['hostVIP'])
-# plotMeanDataTypeMultiRun('singleAppTest_VoIP', ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [[0, 0, 0, i] for i in [1,5,9,13,17,21,25,29,33,37,41,45,49]], 'PkLR', 'pklr', ['hostVIP'])
-
 
 if __name__ == "__main__":
     name = sys.argv[3]
