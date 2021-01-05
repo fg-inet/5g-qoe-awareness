@@ -132,7 +132,7 @@ def chooseName(dataName):
     elif dataName == '3link2':
         return 'Return Link'
 
-colormap = plt.get_cmap('tab10').colors
+colormap = plt.get_cmap('Set1').colors
 print(colormap)
 colorMapping = {
     'VID' : colormap[0],

@@ -8,7 +8,6 @@ helpFunction()
    echo -e "\t-i Omnet++ INI file containing the congfig to run"
    echo -e "\t-c Config for the scenario you want to run"
    echo -e "\t-s Number of slices in the scenario you want to run"
-#    echo -e "\t-t Number of threads to paralellize the simulation"
    exit 1 # Exit script after printing help
 }
 
@@ -18,23 +17,37 @@ do
       i ) iniFile="$OPTARG" ;;
       c ) config="$OPTARG" ;;
       s ) slices="$OPTARG" ;;
-    #   t ) numThreads="$OPTARG" ;;
       ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
    esac
 done
 
 # Print helpFunction in case parameters are empty
-if [ -z "$iniFile" ] || [ -z "$config" ] || [ -z "$slices" ] #|| [ -z "$numThreads" ]
+if [ -z "$iniFile" ] || [ -z "$config" ] || [ -z "$slices" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 
-opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
+###### Run a single simulation config. Note: The config should only have one run here!!! ######
+###### You may need to relink the paths depending on your machine!!!!! ######
 
+### Marcin's Version ###
+# opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
+
+### Vagrant 1 ###
+opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../inet4/src:../../../../inet4/examples:../../../../inet4/tutorials:../../../../inet4/showcases -l ../../../../inet4/src/INET 2>&1 | tee  ${config}.txt # Vagrant 1
+
+### Vagrant 2 ###
+# opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../../inet4/src:../../../../../inet4/examples:../../../../../inet4/tutorials:../../../../../inet4/showcases -l ../../../../../inet4/src/INET 2>&1 | tee ${config}.txt # Vagrant 2
+
+### Vagrant 3 ###
+# opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../../inet4/src:../../../../../inet4/examples:../../../../../inet4/tutorials:../../../../../inet4/showcases -l ../../../../../inet4/src/INET 2>&1 | tee ${config}.txt # Vagrant 2
+
+###### Export results from OMNet++ to csv ######
 cd results
 ./export_results_individual_NS.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
 
+###### Extract necessary information from the csv's ######
 cd ../../../analysis/${config}
 name=$(ls)
 cd ../code
@@ -46,6 +59,8 @@ cd ../../videoMOScalcFiles/code
 python3 recalcQoE.py ${config} ${name} # Now take care of both video clients
 cd ../..
 python3 remakeMOSexports.py ${config} ${name} # Remake the mos results to include recalculated values
+
+###### Plot basic plots ######
 python3 plotResNE.py ${config} ${slices} ${name} # Plot everything
 
 echo "Simulation and exports are complete for ${config}";
