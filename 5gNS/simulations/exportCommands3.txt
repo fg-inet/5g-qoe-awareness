@@ -1,0 +1,9 @@
+./exportSimConfig.sh -c htbQoSNno3_5sli_R200_Q35_M100_C110 -s 1
+./exportSimConfig.sh -c htbQoSNno3_5sli_R200_Q40_M100_C140 -s 1
+./exportSimConfig.sh -c htbQoSNno2_2sli_R200_Q35_M100_C100 -s 1
+./exportSimConfig.sh -c htbQoSno1Base_R200_Q35_M100_C100 -s 1
+./exportSimConfig.sh -c htbQoSNno2_2sli_R200_Q35_M100_C110 -s 1
+./exportSimConfig.sh -c htbQoSno1Base_R200_Q35_M100_C110 -s 1
+./exportSimConfig.sh -c htbQoSNno2_2sli_R200_Q40_M100_C140 -s 1
+./exportSimConfig.sh -c htbQoSno1Base_R200_Q40_M100_C140 -s 1
+./exportSimConfig.sh -c htbQoSNno3_5sli_R200_Q35_M100_C100 -s 1
