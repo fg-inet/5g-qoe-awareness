@@ -99,7 +99,7 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
     };
 
     struct waitComp { // Comparator to sort the waiting classes according to their expected mode change time
-        bool operator()(htbClass* const & a, htbClass* const & b) {
+        bool operator()(htbClass* const & a, htbClass* const & b) const {
             return a->nextEventTime < b->nextEventTime;
         }
     };
@@ -109,7 +109,7 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
         unsigned int levelId; // Level number. 0 = Leaf
         std::set<htbClass*> selfFeeds[maxHtbNumPrio]; // Self feeds for each priority. Contain active green classes
         htbClass* nextToDequeue[maxHtbNumPrio]; // Next green class to dequeue on level
-        std::set<htbClass*, waitComp> waitingClasses; // Red classes waiting to become non-red.
+        std::multiset<htbClass*, waitComp> waitingClasses; // Red classes waiting to become non-red.
     };
 
     htbLevel* levels[maxHtbDepth]; // Levels saved here
@@ -162,6 +162,7 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
     void chargeClass(htbClass *leafCl, int borrowLevel, Packet *packetToDequeue);
 
     void htbAddToWaitTree(htbClass *cl, long long delay);
+    void htbRemoveFromWaitTree(htbClass *cl);
     htbClass *getLeaf(int priority, int level);
     simtime_t doEvents(int level);
 
