@@ -312,10 +312,11 @@ simtime_t HTBScheduler::doEvents(int level) {
 //    }
 
 //    std::multiset<htbClass*, waitComp> tempWaitingClasses = levels[level]->waitingClasses;
-    std::multiset<htbClass*, waitComp>* tempWaitingClasses = new std::multiset<htbClass*, waitComp>(levels[level]->waitingClasses);
+//    std::multiset<htbClass*, waitComp>* tempWaitingClasses = new std::multiset<htbClass*, waitComp>(levels[level]->waitingClasses);
 //    std::copy(levels[level]->waitingClasses.begin(), levels[level]->waitingClasses.end(), tempWaitingClasses.begin());
 
-    for (auto it = tempWaitingClasses->begin(); it != tempWaitingClasses->end(); ) {
+//    for (auto it = tempWaitingClasses->begin(); it != tempWaitingClasses->end(); ) {
+    for (auto it = levels[level]->waitingClasses.begin(); it != levels[level]->waitingClasses.end(); ) {
         htbClass *cl = *it; // Class to update
 
         it++;
@@ -348,7 +349,7 @@ simtime_t HTBScheduler::doEvents(int level) {
 //        i++;
     }
 
-    delete tempWaitingClasses;
+//    delete tempWaitingClasses;
 
 //    printSet = "";
 //    for (auto & elem : levels[level]->waitingClasses){
@@ -512,7 +513,7 @@ int HTBScheduler::schedulePacket() {
 
     // Go over all levels until we find something to dequeue
     for (level = 0; level < maxHtbDepth; level++) {
-        printLevel(levels[level], level);
+//        printLevel(levels[level], level);
         nextEvent = doEvents(level); // Do all events for level
 
         // Go through all priorities on level until we find something to dequeue
@@ -578,8 +579,8 @@ void HTBScheduler::htbEnqueue(int index, Packet *packet) {
 //    currLeaf->leaf.queueLevel += packetLen; //TODO: Take care of dropped packets!!!! Queue overflow or so...
 //    emit(currLeaf->leaf.queueLvl, currLeaf->leaf.queueLevel);
     activateClass(currLeaf, currLeaf->leaf.priority);
-    printClass(currLeaf);
-    printLevel(levels[currLeaf->level], currLeaf->level);
+//    printClass(currLeaf);
+//    printLevel(levels[currLeaf->level], currLeaf->level);
 
 //    EV_INFO << "HTBScheduler: Bytes in queue at index " << index << " = " << leafClasses.at(index)->type.leaf.queueLevel << endl;
     return;
