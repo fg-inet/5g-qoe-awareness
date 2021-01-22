@@ -32,10 +32,10 @@ fi
 ###### You may need to relink the paths depending on your machine!!!!! ######
 
 ### Marcin's Version ###
-# opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
+opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
 
 ### Vagrant 1 ###
-opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../inet4/src:../../../../inet4/examples:../../../../inet4/tutorials:../../../../inet4/showcases -l ../../../../inet4/src/INET 2>&1 | tee  ${config}.txt # Vagrant 1
+# opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../inet4/src:../../../../inet4/examples:../../../../inet4/tutorials:../../../../inet4/showcases -l ../../../../inet4/src/INET 2>&1 | tee  ${config}.txt # Vagrant 1
 
 ### Vagrant 2 ###
 # opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -m -n .:../src:../../../../../inet4/src:../../../../../inet4/examples:../../../../../inet4/tutorials:../../../../../inet4/showcases -l ../../../../../inet4/src/INET 2>&1 | tee ${config}.txt # Vagrant 2
