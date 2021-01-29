@@ -131,7 +131,7 @@ def chooseName(dataName):
         return 'Return Link'
 
 colormap = plt.get_cmap('Set1').colors
-print(colormap)
+# print(colormap)
 colorMapping = {
     'VID' : colormap[0],
     'LVD' : colormap[1], 
@@ -1333,10 +1333,10 @@ def plotMosVsSlices(testPrefix, linkSpeed, ceils, qs):
     plt.close('all')
 
 
-def plotMosVsSlicesSplit(testPrefix, linkSpeed, ceils, qs):
+def plotMosVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, prio):
     prePath = '../exports/extracted/mos2/'
     filenames = glob.glob(prePath+testPrefix+'*')
-
+    # print(filenames)
     
     for ceil in ceils:
         fig, ax = plt.subplots(1, figsize=(16,12))
@@ -1348,8 +1348,9 @@ def plotMosVsSlicesSplit(testPrefix, linkSpeed, ceils, qs):
         runIdents = []
         for q in qs:
             for filename in filenames:
-                # print(filename)
-                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                print(filename)
+                print('_R'+str(linkSpeed), '_Q'+str(q), '_C'+str(ceil))
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename and '_P'+str(prio) in filename:
                     runName = filename.split('/')[-1].split('.')[0]
                     print('Run:', runName)
                     numSli = 1
@@ -1426,7 +1427,7 @@ def plotMosVsSlicesSplit(testPrefix, linkSpeed, ceils, qs):
         plt.legend(fontsize=20)
         plt.xlabel('Number of Slices')
         plt.ylabel("QoE")
-        outPath = preOutPath+'meanMosVsNumSlices_R'+str(linkSpeed)+'_C'+str(ceil)+'.png'
+        outPath = preOutPath+'meanMosVsNumSlices_R'+str(linkSpeed)+'_C'+str(ceil)+'_P'+str(prio)+'.png'
         fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
         plt.close('all')
 
@@ -1618,7 +1619,7 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime):
         runIdents = []
         for q in qs:
             for filename in filenames:
-                # print(filename)
+                print(filename)
                 if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
                     runName = filename.split('/')[-1].split('.')[0]
                     print('Run:', runName)
@@ -1698,10 +1699,10 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime):
         plt.close('all')
 
 
-linkSpeeds = [100, 200]
-ceil = [100, 110, 125, 140]
-qs = [30, 35, 40]
-for ls in linkSpeeds:
+# linkSpeeds = [100, 200]
+# ceil = [100, 110, 125, 140]
+# qs = [30, 35, 40]
+# for ls in linkSpeeds:
     # plotMosVsNumCli('liteChtb', ls, ceil)
     # plotMosVsTarget('liteChtb', ls, ceil)
     # plot3DMosVsNumUsersCeil('liteChtb', ls, ceil)
@@ -1712,5 +1713,8 @@ for ls in linkSpeeds:
     # plotMosVsSlices('liteChtb', ls, ceil, qs)
     # plotMosVsSlicesSplit('liteChtb', ls, ceil, qs)
     # plotUtilVsSlicesSplit('liteChtb', ls, ceil, qs, 400)
-    plotUtilVsSlices('liteChtb', ls, ceil, qs, 400)
+    # plotUtilVsSlices('liteChtb', ls, ceil, qs, 400)
     # plotAvgTPVsNumCli('liteChtb', ls, ceil, 400)
+
+plotMosVsSlicesSplit('qoeAdm', 100, [140], [35], False)
+plotMosVsSlicesSplit('qoeAdm', 100, [140], [35], True)
