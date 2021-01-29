@@ -1246,6 +1246,7 @@ def plotMosVsSlices(testPrefix, linkSpeed, ceils, qs):
     targetQoEs = {}
     numSlices = {}
     runIdents = []
+    
     for ceil in ceils:
         for q in qs:
             for filename in filenames:
@@ -1320,7 +1321,7 @@ def plotMosVsSlices(testPrefix, linkSpeed, ceils, qs):
     preOutPath = '../exports/plots/mosConf/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
-    # ax.set_ylim(1,5)
+    ax.set_ylim(3.3,4.3)
     ticks = [1, 2, 3]
     labels = [1,2,5]
     plt.xticks(ticks, labels)
@@ -1332,15 +1333,384 @@ def plotMosVsSlices(testPrefix, linkSpeed, ceils, qs):
     plt.close('all')
 
 
+def plotMosVsSlicesSplit(testPrefix, linkSpeed, ceils, qs):
+    prePath = '../exports/extracted/mos2/'
+    filenames = glob.glob(prePath+testPrefix+'*')
+
+    
+    for ceil in ceils:
+        fig, ax = plt.subplots(1, figsize=(16,12))
+
+        numCLIs = {}
+        meanMOSs = {}
+        targetQoEs = {}
+        numSlices = {}
+        runIdents = []
+        for q in qs:
+            for filename in filenames:
+                # print(filename)
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanMOSs[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'Val').dropna()
+                    meanCliMOS = []
+                    for col in mosValDF:
+                        meanCliMOS.append(statistics.mean(mosValDF[col].dropna().tolist()))
+
+                    # curveIdent = runIdent + '_Q' + str(tarQoE)
+                    # if curveIdent not in curveIdents:
+                    #     curveIdents.append(curveIdent)
+                    #     mosPlotVals[curveIdent] = []
+                    # mosPlotVals[curveIdent].append(statistics.mean(meanCliMOS))
+
+
+                    print('\tMean run MOS:', statistics.mean(meanCliMOS))
+                    meanMOSs[runIdent].append(statistics.mean(meanCliMOS))
+                    # break
+        print(numCLIs)
+        print(targetQoEs)
+        print(meanMOSs)
+        print(numSlices)
+
+        for runIdent in runIdents:
+            # print(runIdent)
+            ceil1 = str(runIdent.split('C')[1].split('_Q')[0])
+            cl = 'black'
+            if ceil1 == '110':
+                cl = 'green'
+            if ceil1 == '125':
+                cl = 'blue'
+            if ceil1 == '140':
+                cl = 'orange'
+            tqoe = str(runIdent.split('_Q')[1])
+            ls = 'solid'
+            if tqoe == '35':
+                ls = 'dashed'
+            if tqoe == '40':
+                ls = 'dotted'
+
+            lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+            
+
+            arrNumSli = [1,2,3]
+            arrMeanMos = [x for _,x in sorted(zip(numSlices[runIdent],meanMOSs[runIdent]))]
+
+            ax.plot(arrNumSli, arrMeanMos, 's-', marker='s', linestyle=ls, color=cl, label=lbl)
+        # # ax.plot(numCLIs[runIdent], targetQoEs[runIdent], 'D-', color='red', label='Target QoE')
+
+        preOutPath = '../exports/plots/mosConf/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        ax.set_ylim(3.3,4.3)
+        ticks = [1, 2, 3]
+        labels = [1,2,5]
+        plt.xticks(ticks, labels)
+        plt.legend(fontsize=20)
+        plt.xlabel('Number of Slices')
+        plt.ylabel("QoE")
+        outPath = preOutPath+'meanMosVsNumSlices_R'+str(linkSpeed)+'_C'+str(ceil)+'.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+        plt.close('all')
+
+
+def plotAvgTPVsNumCli(testPrefix, linkSpeed, ceils, simTime):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+
+    fig, ax = plt.subplots(1, figsize=(16,12))
+    
+    curveIdents = []
+    mosPlotVals = {}
+
+    # print(filenames)
+    # for ceil in ceils:
+    numCLIs = {}
+    meanTPs = {}
+    targetQoEs = {}
+    runIdents = []
+    for ceil in ceils:
+        for filename in filenames:
+            # print(filename)
+            if '_R'+str(linkSpeed) in filename and '_C'+str(ceil) in filename:
+                runName = filename.split('/')[-1].split('.')[0]
+                print('Run:', runName)
+                tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                print('\tTarget QoE:', tarQoE)
+                numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                print('\tNumber of clients:', numCliRun)
+                runIdent = runName.split('_R')[0]+'_C'+str(ceil)
+                if runIdent not in runIdents:
+                    numCLIs[runIdent] = []
+                    meanTPs[runIdent] = []
+                    targetQoEs[runIdent] = []
+                    runIdents.append(runIdent)
+                numCLIs[runIdent].append(numCliRun)
+                targetQoEs[runIdent].append(tarQoE)
+                runDF = pd.read_csv(filename)
+                mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                print('Average Throughput:',mosValDF['Downlink Throughput resAllocLink0'].sum()/simTime, 'kbps')
+                meanTPs[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/simTime)
+                # print('Average Resource Utilization:',mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime*linkSpeed*10), '%')
+
+    print(numCLIs)
+    print(targetQoEs)
+    print(meanTPs)
+
+    for runIdent in runIdents:
+        sli = 'Base'
+        cl = 'green'
+        if 'sli' in runIdent:
+            sli = str(runIdent.split('_')[1].split('sli')[0]) + ' Slices'
+            if sli == '2 Slices':
+                cl = 'blue'
+            if sli == '5 Slices':
+                cl = 'orange'
+
+        ceil1 = str(runIdent.split('_C')[1])
+        lbl = 'Ceil of: ' + ceil1 + '%; ' + sli
+        ls = 'solid'
+        if ceil1 == '110':
+            ls = 'dashed'
+        if ceil1 == '125':
+            ls = 'dashdot'
+        if ceil1 == '140':
+            ls = 'dotted'
+        ax.plot(numCLIs[runIdent], meanTPs[runIdent], 's-', marker='s', linestyle=ls, color=cl, label=lbl)
+    ax.plot(numCLIs[runIdent], [linkSpeed*1000 for _ in numCLIs[runIdent]], 'D-', color='red', label='System capacity')
+
+    preOutPath = '../exports/plots/tpConf/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    # ax.set_ylim(1,5)
+    plt.legend(fontsize=20)
+    plt.xlabel('Number of clients')
+    plt.ylabel("Average System Throughput [kbps]")
+    outPath = preOutPath+'meanTPVsCliNum_R'+str(linkSpeed)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+
+
+def plotUtilVsSlices(testPrefix, linkSpeed, ceils, qs, simTime):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+
+    fig, ax = plt.subplots(1, figsize=(16,12))
+
+    numCLIs = {}
+    meanUtils = {}
+    targetQoEs = {}
+    numSlices = {}
+    runIdents = []
+    
+    for ceil in ceils:
+        for q in qs:
+            for filename in filenames:
+                # print(filename)
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanUtils[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                    # meanCliMOS = []
+                    
+                    # for col in mosValDF:
+                    #     meanCliMOS.append(statistics.mean(mosValDF[col].dropna().tolist()))
+
+                    # curveIdent = runIdent + '_Q' + str(tarQoE)
+                    # if curveIdent not in curveIdents:
+                    #     curveIdents.append(curveIdent)
+                    #     mosPlotVals[curveIdent] = []
+                    # mosPlotVals[curveIdent].append(statistics.mean(meanCliMOS))
+                    meanUtils[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime*linkSpeed*10))
+                    # break
+    print(numCLIs)
+    print(targetQoEs)
+    print(meanUtils)
+    print(numSlices)
+
+    for runIdent in runIdents:
+        # print(runIdent)
+        ceil1 = str(runIdent.split('C')[1].split('_Q')[0])
+        cl = 'black'
+        if ceil1 == '110':
+            cl = 'green'
+        if ceil1 == '125':
+            cl = 'blue'
+        if ceil1 == '140':
+            cl = 'orange'
+        tqoe = str(runIdent.split('_Q')[1])
+        ls = 'solid'
+        if tqoe == '35':
+            ls = 'dashed'
+        if tqoe == '40':
+            ls = 'dotted'
+
+        lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+        
+
+        arrNumSli = [1,2,3]
+        arrMeanMos = [x for _,x in sorted(zip(numSlices[runIdent],meanUtils[runIdent]))]
+
+        ax.plot(arrNumSli, arrMeanMos, 's-', marker='s', linestyle=ls, color=cl, label=lbl)
+
+    preOutPath = '../exports/plots/tpConf/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    ax.set_ylim(65,90)
+    ticks = [1, 2, 3]
+    labels = [1,2,5]
+    plt.xticks(ticks, labels)
+    plt.legend(fontsize=20)
+    plt.xlabel('Number of Slices')
+    plt.ylabel("System Utilization [%]")
+    outPath = preOutPath+'meanUtilVsNumSlices_R'+str(linkSpeed)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+
+    
+    for ceil in ceils:
+        fig, ax = plt.subplots(1, figsize=(16,12))
+
+        numCLIs = {}
+        meanUtils = {}
+        targetQoEs = {}
+        numSlices = {}
+        runIdents = []
+        for q in qs:
+            for filename in filenames:
+                # print(filename)
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanUtils[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                    # meanCliMOS = []
+                    
+                    # for col in mosValDF:
+                    #     meanCliMOS.append(statistics.mean(mosValDF[col].dropna().tolist()))
+
+                    # curveIdent = runIdent + '_Q' + str(tarQoE)
+                    # if curveIdent not in curveIdents:
+                    #     curveIdents.append(curveIdent)
+                    #     mosPlotVals[curveIdent] = []
+                    # mosPlotVals[curveIdent].append(statistics.mean(meanCliMOS))
+                    meanUtils[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime*linkSpeed*10))
+                    # break
+        print(numCLIs)
+        print(targetQoEs)
+        print(meanUtils)
+        print(numSlices)
+
+        for runIdent in runIdents:
+            # print(runIdent)
+            ceil1 = str(runIdent.split('C')[1].split('_Q')[0])
+            cl = 'black'
+            if ceil1 == '110':
+                cl = 'green'
+            if ceil1 == '125':
+                cl = 'blue'
+            if ceil1 == '140':
+                cl = 'orange'
+            tqoe = str(runIdent.split('_Q')[1])
+            ls = 'solid'
+            if tqoe == '35':
+                ls = 'dashed'
+            if tqoe == '40':
+                ls = 'dotted'
+
+            lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+            
+
+            arrNumSli = [1,2,3]
+            arrMeanMos = [x for _,x in sorted(zip(numSlices[runIdent],meanUtils[runIdent]))]
+
+            ax.plot(arrNumSli, arrMeanMos, 's-', marker='s', linestyle=ls, color=cl, label=lbl)
+
+        preOutPath = '../exports/plots/tpConf/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        ax.set_ylim(65,90)
+        ticks = [1, 2, 3]
+        labels = [1,2,5]
+        plt.xticks(ticks, labels)
+        plt.legend(fontsize=20)
+        plt.xlabel('Number of Slices')
+        plt.ylabel("System Utilization [%]")
+        outPath = preOutPath+'meanUtilVsNumSlices_R'+str(linkSpeed)+'_C'+str(ceil)+'.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+        plt.close('all')
+
+
 linkSpeeds = [100, 200]
 ceil = [100, 110, 125, 140]
 qs = [30, 35, 40]
 for ls in linkSpeeds:
-    plotMosVsNumCli('liteChtb', ls, ceil)
-    plotMosVsTarget('liteChtb', ls, ceil)
-    plot3DMosVsNumUsersCeil('liteChtb', ls, ceil)
-    plotMosVsCeil('liteChtb', ls, ceil)
-    for c in ceil:
-        plotMosVsNumUsers('liteChtb', ls, c)
-        plot3DMosVsNumUsers('liteChtb', ls, c)
-    plotMosVsSlices('liteChtb', ls, ceil, qs)
+    # plotMosVsNumCli('liteChtb', ls, ceil)
+    # plotMosVsTarget('liteChtb', ls, ceil)
+    # plot3DMosVsNumUsersCeil('liteChtb', ls, ceil)
+    # plotMosVsCeil('liteChtb', ls, ceil)
+    # for c in ceil:
+    #     plotMosVsNumUsers('liteChtb', ls, c)
+    #     plot3DMosVsNumUsers('liteChtb', ls, c)
+    # plotMosVsSlices('liteChtb', ls, ceil, qs)
+    # plotMosVsSlicesSplit('liteChtb', ls, ceil, qs)
+    # plotUtilVsSlicesSplit('liteChtb', ls, ceil, qs, 400)
+    plotUtilVsSlices('liteChtb', ls, ceil, qs, 400)
+    # plotAvgTPVsNumCli('liteChtb', ls, ceil, 400)

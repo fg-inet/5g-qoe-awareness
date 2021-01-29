@@ -70,3 +70,12 @@
 ./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSno1Base_R200_Q30_M100_C140 -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSNno2_2sli_R200_Q30_M100_C140 -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTest.ini -c htbQoSNno3_5sli_R200_Q30_M100_C140 -s 1
+
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo1Base_R100_Q35_M100_C140_PTrue -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo2_2sli_R100_Q35_M100_C140_PTrue -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo3_5sli_R100_Q35_M100_C140_PTrue -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo1Base_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo2_2sli_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qoeAdmNo3_5sli_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qosAdmNo1Base_R100_Q35_M100_C140_PTrue -s 1
+./runAndExportSimConfig.sh -i htbSimpleTest.ini -c qosAdmNo1Base_R100_Q35_M100_C140_PFalse -s 1
