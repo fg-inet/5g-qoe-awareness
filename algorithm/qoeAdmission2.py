@@ -302,7 +302,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     f2.close()
 
 
-targetQoE = [3.5]
+targetQoE = [3.0, 4.0]
 assuredMulti = [1.0]
 rates = [100]
 maxCliRate = [50]

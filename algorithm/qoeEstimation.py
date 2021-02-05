@@ -60,17 +60,18 @@ class ClientQoeEstimator:
         mosMap = []
         csvFolder = currentdir+'/mosMaps/' # Path to folder with csv heat map results
         suffix = ''
-        if self.cliType == 'hostFDO':
-            suffix = 'Fine'
         if  self.cliType == 'hostVID':
-            suffix = 'FineLong'
-            # suffix = 'Long'
+            suffix = 'FineLongV2'
+        if  self.cliType == 'hostLVD':
+            suffix = 'FineLongV2'  
+        if self.cliType == 'hostFDO':
+            suffix = 'FineV2'
         if  self.cliType == 'hostVIP':
             suffix = '_corrected'    
-        # if self.cliType == 'hostLVD':
-        #     suffix = 'FineLong'
-        # if  self.cliType == 'hostVID':
-        #     suffix = 'Long'
+        if  self.cliType == 'hostSSH':
+            suffix = ''    
+          
+        
         file_to_read = csvFolder + 'heatMap_' + self.cliType + suffix + '.csv'
         with open(file_to_read, mode='r') as readFile:
             csv_reader = csv.reader(readFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
@@ -108,7 +109,7 @@ class ClientQoeEstimator:
         xAxis = xAxis[::-1]
         return newMosMap, xAxis, yAxis
     
-    def estQoEbd(self, availBand, estDelay):
+    def estUTILbd(self, availBand, estDelay):
         corBand = min(self.yAxis, key=lambda x:abs(x-availBand))
         corDel = min(self.xAxis, key=lambda x:abs(x-estDelay))
         # print(corBand, corDel)
@@ -118,6 +119,13 @@ class ClientQoeEstimator:
         # if self.cliType == 'hostLVD':
         #     estimMos += 0.8
         return estimMos
+    
+    def estQoEbd(self, availBand, estDelay):
+        corBand = min(self.yAxis, key=lambda x:abs(x-availBand))
+        corDel = min(self.xAxis, key=lambda x:abs(x-estDelay))
+        # print(corBand, corDel)
+        initialEstimMos = self.mosMap[self.xAxis.index(corDel)][self.yAxis.index(corBand)]
+        return initialEstimMos
 
     def estQoEb(self, availBand):
         estimatedDelay = delEst.estDelay(self.cliType, availBand)

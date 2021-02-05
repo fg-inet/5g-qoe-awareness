@@ -9,6 +9,9 @@ import statistics
 from scipy import stats
 import os
 
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator)
+
 font = {'weight' : 'normal',
         'size'   : 40}
 
@@ -67,11 +70,11 @@ def plotHeatMap(testName):
     fig, ax = plt.subplots(1, figsize=(16,12))
     norm = matplotlib.colors.Normalize(vmin=1.0, vmax=5.0)
     cmap = plt.cm.get_cmap(name='viridis',lut=1024)
-    im = ax.imshow(np.array(newMosMap), norm=norm, cmap=cmap)
+    im = ax.imshow(np.array(newMosMap), norm=norm, cmap=cmap, aspect='auto')
     
     cbar = ax.figure.colorbar(im, ax=ax, norm=norm, cmap=cmap)
 
-    cbar.ax.set_ylabel('Mos Value', rotation=-90, va="bottom")
+    cbar.ax.set_ylabel('MOS Value', rotation=-90, va="bottom")
     cbar.set_clim(1.0, 5.0)
 
 
@@ -84,20 +87,34 @@ def plotHeatMap(testName):
     ax.set_yticklabels(xAxis)
     ax.set_xticklabels(yAxis)
 
-    labels = ax.get_xticklabels() # get x labels
-    for i,l in enumerate(labels):
-        if(i%3 != 0): labels[i] = '' # skip even labels
-    ax.set_xticklabels(labels, rotation=90) # set new labels
 
+    xAxisMajor = 3
+    if 'V2' in testName:
+        xAxisMajor = 15
+
+
+    labels = ax.get_xticklabels() # get x labels
+    newLabels = [0]
+    for i,_ in enumerate(labels):
+        if i % xAxisMajor == 0: newLabels.append(labels[i])
+    ax.xaxis.set_major_locator(MultipleLocator(xAxisMajor))
+    ax.xaxis.set_minor_locator(MultipleLocator(1))
+    ax.set_xticklabels(newLabels, rotation=90) # set new labels
+
+    newLabels = [0]
     labels = ax.get_yticklabels() # get y labels
     for i,l in enumerate(labels):
-        if(i%3 != 0): labels[i] = '' # skip even labels
-    ax.set_yticklabels(labels, rotation=0) # set new labels
+        if i%3 == 0: newLabels.append(labels[i])
+    ax.yaxis.set_major_locator(MultipleLocator(3))
+    ax.yaxis.set_minor_locator(MultipleLocator(1))
+    ax.set_yticklabels(newLabels, rotation=0) # set new labels
 
     plt.ylabel("Link Delay [ms]")
     plt.xlabel("Link Throughput [kbps]")
     outPath = '../exports/plots/heatMapTest/' + testName + '.pdf'
     fig.savefig(outPath, dpi=100, bbox_inches='tight')
+    outPath = '../exports/plots/heatMapTest/' + testName + '.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
     plt.close('all')
 
 def normalizeQoE(cliType, mos):
@@ -236,4 +253,11 @@ def plotHeatMapUtility(testName, cliType):
 
 # plotHeatMapUtility('heatMapTest_FileDownloadFine', 'hostFDO')
 
-plotHeatMapUtility('heatMapTest_VoIP_corrected', 'hostVIP')
+# plotHeatMapUtility('heatMapTest_VoIP_corrected', 'hostVIP')
+
+
+plotHeatMap('heatMapTest_LiveVideoFineLongV2')
+plotHeatMap('heatMapTest_VideoFineLongV2')
+plotHeatMap('heatMapTest_FileDownloadFine')
+plotHeatMap('heatMapTest_SSH')
+plotHeatMap('heatMapTest_VoIP_corrected')
