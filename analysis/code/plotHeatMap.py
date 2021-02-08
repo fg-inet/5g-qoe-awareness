@@ -89,7 +89,7 @@ def plotHeatMap(testName):
 
 
     xAxisMajor = 3
-    if 'V2' in testName:
+    if 'V2' in testName or 'V3' in testName:
         xAxisMajor = 15
 
 
@@ -256,8 +256,10 @@ def plotHeatMapUtility(testName, cliType):
 # plotHeatMapUtility('heatMapTest_VoIP_corrected', 'hostVIP')
 
 
-plotHeatMap('heatMapTest_LiveVideoFineLongV2')
-plotHeatMap('heatMapTest_VideoFineLongV2')
-plotHeatMap('heatMapTest_FileDownloadFine')
-plotHeatMap('heatMapTest_SSH')
-plotHeatMap('heatMapTest_VoIP_corrected')
+# plotHeatMap('heatMapTest_LiveVideoFineLongV2')
+# plotHeatMap('heatMapTest_VideoFineLongV2')
+# plotHeatMap('heatMapTest_FileDownloadFine')
+# plotHeatMap('heatMapTest_SSH')
+# plotHeatMap('heatMapTest_VoIP_corrected')
+
+plotHeatMap('heatMapTest_FileDownloadFineV3')

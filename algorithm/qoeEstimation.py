@@ -9,6 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator)
+
 font = {'weight' : 'normal',
         'size'   : 40}
 
@@ -65,7 +68,7 @@ class ClientQoeEstimator:
         if  self.cliType == 'hostLVD':
             suffix = 'FineLongV2'  
         if self.cliType == 'hostFDO':
-            suffix = 'FineV2'
+            suffix = 'FineV3'
         if  self.cliType == 'hostVIP':
             suffix = '_corrected'    
         if  self.cliType == 'hostSSH':
@@ -131,14 +134,14 @@ class ClientQoeEstimator:
         estimatedDelay = delEst.estDelay(self.cliType, availBand)
         return self.estQoEbd(availBand, estimatedDelay)
 
-    def plotUtilityWithDelay(self):
+    def plotMOSWithDelay(self):
         print(self.cliType + ' xAxis length: ' + str(len(self.xAxis)))
         print(self.cliType + ' yAxis length: ' + str(len(self.yAxis)))
 
         fig, ax = plt.subplots(1, figsize=(16,12))
         norm = matplotlib.colors.Normalize(vmin=1.0, vmax=5.0)
         cmap = plt.cm.get_cmap(name='viridis',lut=1024)
-        im = ax.imshow(np.array(self.mosMap), norm=norm, cmap=cmap)
+        im = ax.imshow(np.array(self.mosMap), norm=norm, cmap=cmap, aspect='auto')
         
         cbar = ax.figure.colorbar(im, ax=ax, norm=norm, cmap=cmap)
 
@@ -155,33 +158,46 @@ class ClientQoeEstimator:
         ax.set_yticklabels(xAxis)
         ax.set_xticklabels(yAxis)
 
-        labels = ax.get_xticklabels() # get x labels
-        for i,l in enumerate(labels):
-            if(i%3 != 0): labels[i] = '' # skip even labels
-        ax.set_xticklabels(labels, rotation=90) # set new labels
+        xAxisMajor = 3
+        if 'VID' in self.cliType or 'LVD' in self.cliType or 'FDO' in self.cliType:
+            xAxisMajor = 15
 
+
+        labels = ax.get_xticklabels() # get x labels
+        newLabels = [0]
+        for i,_ in enumerate(labels):
+            if i % xAxisMajor == 0: newLabels.append(labels[i])
+        ax.xaxis.set_major_locator(MultipleLocator(xAxisMajor))
+        ax.xaxis.set_minor_locator(MultipleLocator(1))
+        ax.set_xticklabels(newLabels, rotation=90) # set new labels
+        # print(ax.get_yticks())
+
+        newLabels = [0]
         labels = ax.get_yticklabels() # get y labels
         for i,l in enumerate(labels):
-            if(i%3 != 0): labels[i] = '' # skip even labels
-        ax.set_yticklabels(labels, rotation=0) # set new labels
+            if i%3 == 0: newLabels.append(labels[i])
+        ax.yaxis.set_major_locator(MultipleLocator(3))
+        ax.yaxis.set_minor_locator(MultipleLocator(1))
+        ax.set_yticklabels(newLabels, rotation=0) # set new labels
+        
 
         estimDelays = []
         for place in yAxis:
-            print(place)
+            # print(place)
+            # print(place, delEst.estDelay(self.cliType, place))
             # corDel = min(self.xAxis, key=lambda x:abs(x-delEst.estDelay(self.cliType, x)))
             estimDelays.append(min(self.xAxis, key=lambda x:abs(x-delEst.estDelay(self.cliType, place))))
-        print(estimDelays)
+        # print(estimDelays)
 
-        ax.plot([str(int(x)) for x in yAxis], [str(int(y)) for y in estimDelays], marker='+', ls='-', color='red')
-
-        
-        
-        
+        # ax.plot([str(int(x)) for x in yAxis], [str(int(y)) for y in estimDelays], marker='+', ls='-', color='red')
+        ax.plot([yAxis.index(x) for x in yAxis], [xAxis.index(y) for y in estimDelays], marker='+', ls='-', color='red')
 
         plt.ylabel("Link Delay [ms]")
         plt.xlabel("Link Throughput [kbps]")
         outPath = 'mosMaps/plots/' + self.cliType + '.pdf'
         fig.savefig(outPath, dpi=100, bbox_inches='tight')
+        outPath = 'mosMaps/plots/' + self.cliType + '.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
         plt.close('all')
 
 if __name__ == "__main__":
@@ -191,11 +207,11 @@ if __name__ == "__main__":
     test3 = ClientQoeEstimator('hostVID')
     test4 = ClientQoeEstimator('hostVIP')
     test5 = ClientQoeEstimator('hostLVD')
-    test1.plotUtilityWithDelay()
-    # test2.plotUtilityWithDelay()
-    # test3.plotUtilityWithDelay()
-    # test4.plotUtilityWithDelay()
-    # test5.plotUtilityWithDelay()
+    test1.plotMOSWithDelay()
+    test2.plotMOSWithDelay()
+    test3.plotMOSWithDelay()
+    test4.plotMOSWithDelay()
+    test5.plotMOSWithDelay()
     # print(test1.cliType, '-> minMOS: ', test1.minMos, '\t- maxMOS: ', test1.maxMos)
     # print(test2.cliType, '-> minMOS: ', test2.minMos, '\t\t- maxMOS: ', test2.maxMos)
     # print(test3.cliType, '-> minMOS: ', test3.minMos, '\t- maxMOS: ', test3.maxMos)
