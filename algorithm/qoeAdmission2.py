@@ -306,7 +306,7 @@ targetQoE = [3.5]
 assuredMulti = [1.0]
 rates = [100]
 maxCliRate = [50]
-ceils = [1,25,1.4,2.0]
+ceils = [1.25,1.4,2.0]
 dPrio = [False]
 
 

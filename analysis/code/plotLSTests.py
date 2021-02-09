@@ -514,7 +514,7 @@ def plotLSLinkSpeedMeanE2EDScatter(testName, sumNodes, nodeTypes, nodeSplit, pZe
 
 # plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_SSH', 40, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,0,1,0])
 # plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_VoIP', 51, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,0,0,1], [2, 0.01, 1])
-plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_VoIP_corrected', 51, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,0,0,1], [10000000,0.49,30.91])
+# plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_VoIP_corrected', 51, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,0,0,1], [10000000,0.49,30.91])
 # plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_Video', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0])
 # plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_NewLiveVideoClient', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0])
 # plotLSLinkSpeedMeanE2EDScatter('singleAppLSTest_FileDownload2-5MB', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,1,0,0])
@@ -540,9 +540,9 @@ def plotLSLinkSpeedMeanRTTScatter(testName, sumNodes, nodeTypes, nodeSplit, pZer
 
     fig, ax1 = plt.subplots(1, figsize=(16,12))
     # print(meanValues)
-    ax1.plot(tps, [x*1000 for x in meanE2EDs], 'o')
+    ax1.plot(tps, [x*1000/2 for x in meanE2EDs], 'o')
 
-    popt, pcov = scipy.optimize.curve_fit(negExpFunc, tps, [x*1000 for x in meanE2EDs], p0=pZero, maxfev=1000000, bounds=(0,np.inf))
+    popt, pcov = scipy.optimize.curve_fit(negExpFunc, tps, [x*1000/2 for x in meanE2EDs], p0=pZero, maxfev=1000000, bounds=(0,np.inf))
     
     with np.printoptions(precision=2):
         print(testName + ' with ' + str(nodeSplit) + ': ' + str(popt))
@@ -553,7 +553,7 @@ def plotLSLinkSpeedMeanRTTScatter(testName, sumNodes, nodeTypes, nodeSplit, pZer
         ax1.plot(regLine, negExpFunc(regLine, *popt), '-', label=theLabel, color='orange')
     
     plt.xlabel('Link Bandwidth [kbps]')
-    plt.ylabel('Mean Client RTT [ms]')
+    plt.ylabel('One-Way Delay (1/2 RTT) [ms]')
     prePath = '../exports/plots/' + makeFullScenarioName(testName, sumNodes, nodeTypes, nodeSplit) + '/'
     if not os.path.exists(prePath):
         os.makedirs(prePath)
@@ -568,6 +568,11 @@ def plotLSLinkSpeedMeanRTTScatter(testName, sumNodes, nodeTypes, nodeSplit, pZer
 # plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_Video', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0], [200,0.0001,0])
 # plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_NewLiveVideoClient', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0], [0.1,0.001,0])
 # plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_FileDownload2-5MB', 60, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,1,0,0], [200,0.001,0])
+
+# plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_VideoLongV2', 226, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0], [200,0.0001,0])
+# plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_FileDownloadV3', 226, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [0,1,0,0], [200,0.001,0])
+plotLSLinkSpeedMeanRTTScatter('singleAppLSTest_LiveVideoClientV2', 226, ['hostVID', 'hostFDO', 'hostSSH', 'hostVIP'], [1,0,0,0], [200,0.0001,0])
+
 
 def plotLSMeanTPMedianE2EDScatter(testName, sumNodes, nodeTypes, nodeSplit):
     tps = []
