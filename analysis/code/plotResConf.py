@@ -1801,7 +1801,7 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
         fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
         plt.close('all')
 
-assuredRates = {'Q30' : {'VID' : 480,
+assuredRatesOld = {'Q30' : {'VID' : 480,
                          'LVD' : 1250,
                          'FDO' : 440,
                          'SSH' : 5,
@@ -1816,6 +1816,13 @@ assuredRates = {'Q30' : {'VID' : 480,
                          'FDO' : 800,
                          'SSH' : 10,
                          'VIP' : 30}}
+
+assuredRates = {'Q35' : {'VID' : 1120,
+                         'LVD' : 1800,
+                         'FDO' : 2220,
+                         'SSH' : 10,
+                         'VIP' : 30}}
+
 
 def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs):
     prePath = '../exports/extracted/'+dataType+'/'
@@ -1921,7 +1928,7 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
         os.makedirs(preOutPath)
 
     if dataType == 'throughputs':
-        ax.set_ylim(0,2200)
+        ax.set_ylim(0,4500)
     elif dataType == 'mos2':
         ax.set_ylim(2.0,4.4)
     ax.vlines([5,11], ymin=0, ymax=5000, color='grey')
@@ -1930,6 +1937,154 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
     ax.set_xlim(-0.5,16.5)
     plt.xticks(ticks, labels)
     plt.legend(fontsize=20)
+    plt.xlabel('Number of Slices')
+    plt.ylabel(yAxName)
+    outPath = preOutPath+outName+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+
+def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs):
+    prePath = '../exports/extracted/'+dataType+'/'
+    filenames = glob.glob(prePath+testPrefix+'*')
+    # print(filenames)
+    fig, ax = plt.subplots(1, figsize=(16,12))
+
+    filterName = ''
+    yAxName = ''
+    outName = 'plotSlicesForCeilQsSplit_'+testPrefix+'_R'+str(linkSpeed)+'_C'+str(ceil)+'_Q'+str(qs)
+    if dataType == 'throughputs':
+        filterName = 'Throughput'
+        yAxName = 'Client Thorughput [kbps]'
+        outName += '_TPbox'
+    elif dataType == 'mos2':
+        filterName = 'Val'
+        yAxName = 'Mean Client QoE'
+        outName += '_QoEbox'
+    else:
+        print('Invalid data type!!')
+        return
+
+    numCLIs = {}
+    meanClassVals = {}
+    meanValsCI = {}
+    # meanValsCIhi = {}
+    numSlices = {}
+    runIdents = []
+    for filename in filenames:
+        if 'Uplink' in filename: # Ignore uplink if throughputs
+            continue
+        print(filename)
+        print('_R'+str(linkSpeed), '_Q'+str(qs), '_C'+str(ceil))
+        if '_R'+str(linkSpeed) in filename and '_Q'+str(qs) in filename and '_C'+str(ceil) in filename:
+            runName = filename.split('/')[-1].split('.')[0]
+            print('Run:', runName)
+            numSli = 1
+            if 'sli' in runName:
+                numSli = int(runName.split('sli')[0].split('_')[1])
+            numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+            print('\tNumber of clients:', numCliRun)
+            for appType in appTypes:
+                runIdent = 'C'+str(ceil)+'_Q'+str(qs)+'_'+appType
+                if runIdent not in runIdents:
+                    numCLIs[runIdent] = []
+                    meanClassVals[runIdent] = []
+                    meanValsCI[runIdent] = []
+                    # meanValsCIhi[runIdent] = []
+                    numSlices[runIdent] = []
+                    runIdents.append(runIdent)
+                numCLIs[runIdent].append(numCliRun)
+                numSlices[runIdent].append(numSli)
+                runDF = pd.read_csv(filename)
+                valDF = filterDFType(filterDFType(runDF, filterName), appType).dropna()
+                meanCliValues = []
+                for col in valDF:
+                    if dataType == 'throughputs':
+                        meanCliValues.extend(valDF[col].dropna().tolist())
+                    elif dataType == 'mos2':
+                        meanCliValues.append(statistics.mean(valDF[col].dropna().tolist()))
+                li, hi = stats.t.interval(0.95, len(meanCliValues)-1, loc=np.mean(meanCliValues), scale=stats.sem(meanCliValues))
+                print('\tMean run', dataType, appType, ':', statistics.mean(meanCliValues),'; LowCI:',li,'; HiCI:',hi)
+                meanClassVals[runIdent].append(meanCliValues)
+                meanValsCI[runIdent].append(hi - statistics.mean(meanCliValues))
+            # break
+    print(runIdents)
+    # print(numCLIs)
+    # print(targetQoEs)
+    # print(meanMOSs)
+    print(numSlices)
+
+    counter = 0
+
+    bps = []
+    lbls = []
+
+    if dataType == 'mos2':
+        one = ax.hlines(qs/10,xmin=-1,xmax=17, color='black', linestyle='--', label='Target QoE')
+        bps.append(one)
+        lbls.append('Target QoE')
+
+    elif dataType == 'throughputs':
+        one = ax.hlines(-5,xmin=-20,xmax=-15, color='black', linestyle='--', label='Assured Rate')
+        two = ax.hlines(-5,xmin=-20,xmax=-15, color='black', linestyle='dotted', label='Ceil Rate')
+        bps.append(one)
+        lbls.append('Assured Rate')
+        bps.append(two)
+        lbls.append('Ceil Rate')
+
+    for runIdent in runIdents:
+        color = colorMapping[runIdent.split('_')[-1]]
+
+        arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
+        arrMeanVals = [x for _,x in sorted(zip(numSlices[runIdent],meanClassVals[runIdent]))]
+        arrYerrs = [x for _,x in sorted(zip(numSlices[runIdent],meanValsCI[runIdent]))]
+
+        bp1 = ax.boxplot(arrMeanVals, positions=arrNumSli, notch=False, patch_artist=False,
+            boxprops=dict(color=color),
+            capprops=dict(color=color),
+            whiskerprops=dict(color=color),
+            flierprops=dict(color=color, markeredgecolor=color))
+        
+        bps.append(bp1)
+        lbls.append(chooseName('host'+runIdent.split('_')[-1]))
+        
+
+        # ax.errorbar(arrNumSli, arrMeanVals, yerr=arrYerrs, capsize=20.0, marker='o', linestyle='', color=color, label=chooseName('host'+runIdent.split('_')[-1]))
+
+        if dataType == 'throughputs':
+            exmin = [-0.4 + x for x in arrNumSli]
+            exmax = [0.4 + x for x in arrNumSli]
+            assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
+            ax.hlines([assured for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='--')
+            ax.hlines([assured*ceil/100 for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
+
+
+        counter += 1
+    # # ax.plot(numCLIs[runIdent], targetQoEs[runIdent], 'D-', color='red', label='Target QoE')
+
+    # ax.vlines([5,11])
+
+    preOutPath = '../exports/plots/sliceConf/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+
+    temp=[]
+    if dataType == 'throughputs':
+        ax.set_ylim(0,4500)
+        temp = [bps[0], bps[1]]
+        temp.extend([element["boxes"][0] for element in bps[2:]])
+    elif dataType == 'mos2':
+        ax.set_ylim(2.0,4.4)
+        temp = [bps[0]]
+        temp.extend([element["boxes"][0] for element in bps[1:]])
+    ax.vlines([5,11], ymin=0, ymax=5000, color='grey')
+    ticks = [2+x*6 for x in [0,1,2]]
+    labels = [1,2,5]
+    ax.set_xlim(-0.5,16.5)
+    plt.xticks(ticks, labels)
+    ax.legend(temp, lbls, fontsize='x-small')
+    # plt.legend(fontsize=20)
+    ax.grid(axis='y')
     plt.xlabel('Number of Slices')
     plt.ylabel(yAxName)
     outPath = preOutPath+outName+'.png'
@@ -1979,4 +2134,11 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
 #         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
 #         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
 
-print([100+x*20 for x in range(226)])
+for q in [35]:
+    for ceil in [125, 140, 200]:
+        # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+        # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+
+# print([100+x*20 for x in range(226)])
