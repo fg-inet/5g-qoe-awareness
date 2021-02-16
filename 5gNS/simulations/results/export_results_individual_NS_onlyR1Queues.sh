@@ -137,11 +137,11 @@ do
         # echo -e "\tExporting queues for router 0 and resource link $sliNum:\t\t\c"
         # scavetool export -f "module(*router0.ppp[$sliNum].ppp.queue*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R0ral${sliNum}_vec.csv ${sourceFolder}/*-${run_num}.vec
         echo -e "\tExporting scalars for queues for router 0 and resource link $sliNum:\t\t\c"
-        scavetool export -f "module(*router0.ppp[$sliNum].ppp.queue*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/scalars/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R0ral${sliNum}_sca.csv ${sourceFolder}/*-${run_num}.sca
+        scavetool export -f "module(*router0.ppp[$sliNum].ppp.queue*)" -F CSV-S -x allowMixed=true -o ${resultsFolder}/${subfolderName}/scalars/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R0ral${sliNum}_sca.csv ${sourceFolder}/*-${run_num}.sca
         # echo -e "\tExporting queues for router 1 and resource link $sliNum:\t\t\c"
         # scavetool export -f "module(*router1.ppp[$sliNum].ppp.queue*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R1ral${sliNum}_vec.csv ${sourceFolder}/*-${run_num}.vec
         echo -e "\tExporting scalars for queues for router 1 and resource link $sliNum:\t\t\c"
-        scavetool export -f "module(*router1.ppp[$sliNum].ppp.queue*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/scalars/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R1ral${sliNum}_sca.csv ${sourceFolder}/*-${run_num}.sca
+        scavetool export -f "module(*router1.ppp[$sliNum].ppp.queue*)" -F CSV-S -x allowMixed=true -o ${resultsFolder}/${subfolderName}/scalars/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_R1ral${sliNum}_sca.csv ${sourceFolder}/*-${run_num}.sca
     done
     # scavetool export -f "(module(*router0.ppp[0]*) AND name(*xPk*)) OR (module(*router0.ppp[1]*) AND name(*xPk*)) OR (module(*router0.ppp[2]*) AND name(*xPk*)) OR (module(*router0.ppp[3]*) AND name(*xPk*))"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_links_vec.csv ${sourceFolder}/*-${run_num}.vec
     # echo -e "\tExporting for server serverSSH:\t\t\c"
