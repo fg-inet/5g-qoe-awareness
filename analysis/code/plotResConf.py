@@ -1944,7 +1944,7 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
     plt.close('all')
 
 
-def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs):
+def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs, tpMean):
     prePath = '../exports/extracted/'+dataType+'/'
     filenames = glob.glob(prePath+testPrefix+'*')
     # print(filenames)
@@ -1999,10 +1999,15 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
                 valDF = filterDFType(filterDFType(runDF, filterName), appType).dropna()
                 meanCliValues = []
                 for col in valDF:
-                    if dataType == 'throughputs':
+                    if dataType == 'throughputs' and tpMean == False:
                         meanCliValues.extend(valDF[col].dropna().tolist())
-                    elif dataType == 'mos2':
+                    if dataType == 'throughputs' and tpMean == True:
                         meanCliValues.append(statistics.mean(valDF[col].dropna().tolist()))
+                    elif dataType == 'mos2':
+                        if len(valDF[col].dropna().tolist()) > 0:
+                            meanCliValues.append(statistics.mean(valDF[col].dropna().tolist()))
+                        else:
+                            meanCliValues.append(-1)
                 li, hi = stats.t.interval(0.95, len(meanCliValues)-1, loc=np.mean(meanCliValues), scale=stats.sem(meanCliValues))
                 print('\tMean run', dataType, appType, ':', statistics.mean(meanCliValues),'; LowCI:',li,'; HiCI:',hi)
                 meanClassVals[runIdent].append(meanCliValues)
@@ -2067,6 +2072,9 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
     preOutPath = '../exports/plots/sliceConf/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
+    
+    if tpMean == True:
+        preOutPath += 'meanCLI'
 
     temp=[]
     if dataType == 'throughputs':
@@ -2074,7 +2082,7 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
         temp = [bps[0], bps[1]]
         temp.extend([element["boxes"][0] for element in bps[2:]])
     elif dataType == 'mos2':
-        ax.set_ylim(2.0,4.4)
+        ax.set_ylim(1.0,5.0)
         temp = [bps[0]]
         temp.extend([element["boxes"][0] for element in bps[1:]])
     ax.vlines([5,11], ymin=0, ymax=5000, color='grey')
@@ -2134,11 +2142,27 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
 #         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
 #         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
 
-for q in [35]:
-    for ceil in [125, 140, 200]:
+# for q in [35]:
+#     for ceil in [125, 140, 200]:
         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
+        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
+        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
+        # plotUtilVsSlicesSplit('newHmsQoeAdmN', 100, [ceil], [q], 400, False)
+
+
+for q in [35]:
+    for ceil in [200]:
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
+        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
+#         # plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio)
+        plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelN', 100, [ceil], [q], 400, False)
+#         plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelLC', 100, [ceil], [q], 400, False)
+#         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
+#         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
 
 # print([100+x*20 for x in range(226)])
