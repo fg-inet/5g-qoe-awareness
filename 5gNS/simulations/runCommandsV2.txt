@@ -67,3 +67,6 @@
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission4-3xDelNo1Base_R100_Q35_M100_C200_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission4-3xDelNo2_2sli_R100_Q35_M100_C200_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission4-3xDelNo3_5sli_R100_Q35_M100_C200_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission3-4delBandNo1Base_R100_Q35_M100_C200_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission3-4delBandNo2_2sli_R100_Q35_M100_C200_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c qoeAdmission3-4delBandNo3_5sli_R100_Q35_M100_C200_PFalse -s 1

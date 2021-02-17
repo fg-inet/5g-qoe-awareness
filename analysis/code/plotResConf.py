@@ -1790,7 +1790,7 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
         preOutPath = '../exports/plots/tpConf/'
         if not os.path.exists(preOutPath):
             os.makedirs(preOutPath)
-        # ax.set_ylim(65,90)
+        ax.set_ylim(80,100)
         ticks = [1, 2, 3]
         labels = [1,2,5]
         plt.xticks(ticks, labels)
@@ -2061,7 +2061,7 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
             exmax = [0.4 + x for x in arrNumSli]
             assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
             ax.hlines([assured for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='--')
-            ax.hlines([assured*ceil/100 for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
+            if runIdent.split('_')[-1] != 'FDO': ax.hlines([assured*ceil/100 for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
 
 
         counter += 1
@@ -2100,6 +2100,22 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
     plt.close('all')
 
 
+def plotQueueLengthCDF(testName,dataType):
+    prePath = '../'+dataType+'/scalars/'
+    print(prePath)
+    filenames = glob.glob(prePath+testName+'*')
+    print(filenames)
+    for filename in filenames:
+        print(filename)
+        runDF = pd.read_csv(filename, comment='*')
+        qI = 0
+        while True:
+            queueDF = runDF[runDF['Module'].str.contains('queue\['+str(qI)+'\]')]
+            if queueDF.isEmpty(): break
+            print(queueDF[queueDF['Name'].str.contains('queueLength:timeavg')])
+            qI+=1
+
+plotQueueLengthCDF('qoeAdmissionAutoNo1','routerSCA')
 
 # linkSpeeds = [100, 200]
 # ceil = [100, 110, 125, 140]
@@ -2143,26 +2159,26 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
 #         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
 
 # for q in [35]:
-#     for ceil in [125, 140, 200]:
-        # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
-        # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
-        # plotSlicesBoxForCeilQsSplit('newHmsQoeAdmN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
-        # plotUtilVsSlicesSplit('newHmsQoeAdmN', 100, [ceil], [q], 400, False)
+#     for ceil in [200]:
+#         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+#         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
+#         plotUtilVsSlicesSplit('qoeAdmissionAuto', 100, [ceil], [q], 400, False)
 
 
-for q in [35]:
-    for ceil in [200]:
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
-        plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelN', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
-#         # plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio)
-        plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelN', 100, [ceil], [q], 400, False)
-#         plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelLC', 100, [ceil], [q], 400, False)
-#         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-#         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+# for q in [35]:
+#     for ceil in [200]:
+#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
+#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
+# #         # plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio)
+#         plotUtilVsSlicesSplit('qoeAdmission4-3xDel', 100, [ceil], [q], 400, False)
+# #         plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelLC', 100, [ceil], [q], 400, False)
+# #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
+# #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
 
 # print([100+x*20 for x in range(226)])
