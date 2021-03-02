@@ -2100,22 +2100,165 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
     plt.close('all')
 
 
-def plotQueueLengthCDF(testName,dataType):
+def plotQueueLengthCDF(testName, dataType, metric):
     prePath = '../'+dataType+'/scalars/'
-    print(prePath)
+    # print(prePath)
     filenames = glob.glob(prePath+testName+'*')
-    print(filenames)
+    # print(filenames)
     for filename in filenames:
         print(filename)
+        temp = filename.split('VID')[1]
+        numVID = int(temp.split('_')[0])
+        temp = temp.split('LVD')[1]
+        numLVD = int(temp.split('_')[0])
+        temp = temp.split('FDO')[1]
+        numFDO = int(temp.split('_')[0])
+        temp = temp.split('SSH')[1]
+        numSSH = int(temp.split('_')[0])
+        temp = temp.split('VIP')[1]
+        numVIP = int(temp.split('_')[0])
+        # print('Video:',numVID)
+        # print('Live:',numLVD)
+        # print('Download:',numFDO)
+        # print('VoIP:',numVIP)
+        # print('SSH:',numSSH)
+        # Results order: VID, LVD, FDO, VIP, SSH
         runDF = pd.read_csv(filename, comment='*')
         qI = 0
+        vidQ = []
+        lvdQ = []
+        fdoQ = []
+        vipQ = []
+        sshQ = []
         while True:
             queueDF = runDF[runDF['Module'].str.contains('queue\['+str(qI)+'\]')]
-            if queueDF.isEmpty(): break
-            print(queueDF[queueDF['Name'].str.contains('queueLength:timeavg')])
+            if queueDF.empty: break
+            value = queueDF[queueDF['Name'].str.contains('queue') & queueDF['Name'].str.contains(metric)].iloc[-1,-1]
+            # print(value)
+            # break
+            if qI >= 0 and qI < numVID:
+                vidQ.append(value)
+            elif qI >= numVID and qI < numVID + numLVD:
+                lvdQ.append(value)
+            elif qI >= numVID + numLVD and qI < numVID + numLVD + numFDO:
+                fdoQ.append(value)
+            elif qI >= numVID + numLVD + numFDO and qI < numVID + numLVD + numFDO + numVIP:
+                vipQ.append(value)
+            elif qI >= numVID + numLVD + numFDO + numVIP and qI < numVID + numLVD + numFDO + numVIP + numSSH:
+                sshQ.append(value)
             qI+=1
+        print('Video',len(vidQ), vidQ)
+        print('Live',len(lvdQ), lvdQ)
+        print('Download',len(fdoQ), fdoQ)
+        print('VoIP',len(vipQ), vipQ)
+        print('SSH',len(sshQ), sshQ)
+    
+        fig, ax1 = plt.subplots(1, figsize=(16,12))
 
-plotQueueLengthCDF('qoeAdmissionAutoNo1','routerSCA')
+        partialCDFPlotData(fig, ax1, vidQ, chooseName('hostVID'), '-o', chooseColor('hostVID'))
+        partialCDFPlotData(fig, ax1, lvdQ, chooseName('hostLVD'), '-o', chooseColor('hostLVD'))
+        partialCDFPlotData(fig, ax1, fdoQ, chooseName('hostFDO'), '-o', chooseColor('hostFDO'))
+        partialCDFPlotData(fig, ax1, vipQ, chooseName('hostVIP'), '-o', chooseColor('hostVIP'))
+        partialCDFPlotData(fig, ax1, sshQ, chooseName('hostSSH'), '-o', chooseColor('hostSSH'))
+
+
+
+        partialCDFEnd(fig,ax1,'', 'Queue Length ' + metric, '../exports/plots/queueLen/'+ filename.split('/')[-1].split('_sca')[0] +'_cdfQueueLen' + metric + '.pdf')
+        partialCDFEndPNG(fig,ax1,'', 'Queue Length ' + metric, '../exports/plots/queueLen/'+ filename.split('/')[-1].split('_sca')[0] +'_cdfQueueLen' + metric + '.png')
+
+    
+
+# plotQueueLengthCDF('qoeAdmissionAutoNo1','routerSCA')
+# plotQueueLengthCDF('qoeAdmission4-3xDelNo2_2sli','routerSCA', 'timeavg')
+# plotQueueLengthCDF('qoeAdmission4-3xDelNo2_2sli','routerSCA', 'max')
+
+# plotQueueLengthCDF('qoeAdmissionAutoNo1Base','routerSCA', 'timeavg')
+# plotQueueLengthCDF('qoeAdmissionAutoNo1Base','routerSCA', 'max')
+
+# plotQueueLengthCDF('qoeAdmissionAutoNo2_2sli','routerSCA', 'timeavg')
+# plotQueueLengthCDF('qoeAdmissionAutoNo2_2sli','routerSCA', 'max')
+
+# plotQueueLengthCDF('qoeAdmissionAutoNo3_5sli','routerSCA', 'timeavg')
+# plotQueueLengthCDF('qoeAdmissionAutoNo3_5sli','routerSCA', 'max')
+
+# plotQueueLengthCDF('qoeAdmission3-4delBandNo','routerSCA', 'timeavg')
+# plotQueueLengthCDF('qoeAdmission3-4delBandNo','routerSCA', 'max')
+
+
+def plotClassTPSbarDirection(testNamePrefixes, dataType, direction, hostConfigToPlot, groupNames, simTime):
+    prePath = '../exports/extracted/'+dataType+'/'
+    # print(prePath)
+    filenames = []
+    outName = ''
+    for testName in testNamePrefixes:
+        outName += testName
+        filenames.extend([x for x in glob.glob(prePath+testName+'*') if direction[0] in x])
+    
+    
+    # print(filenames)
+    
+    barSpacing = len(filenames)
+    cmap = matplotlib.cm.get_cmap('Set1')
+    ivals = np.linspace(0, 1, barSpacing)
+    colors = [cmap(x) for x in ivals]
+    print(colors)
+    
+    groupNum = 0
+    for group,name in zip(hostConfigToPlot,groupNames):
+        fig, ax1 = partialCDFBegin(1)
+        testNum = 0
+        for filename in filenames:
+            print(filename)
+            # temp = filename.split('VID')[1]
+            # numVID = int(temp.split('_')[0])
+            # temp = temp.split('LVD')[1]
+            # numLVD = int(temp.split('_')[0])
+            # temp = temp.split('FDO')[1]
+            # numFDO = int(temp.split('_')[0])
+            # temp = temp.split('SSH')[1]
+            # numSSH = int(temp.split('_')[0])
+            # temp = temp.split('VIP')[1]
+            # numVIP = int(temp.split('_')[0])
+            runDF = pd.read_csv(filename, comment='*')
+            groupKbitsSum = 0
+            for hostType in group:
+                groupKbitsSum += runDF.filter(like=hostType).to_numpy().sum()
+            print(groupKbitsSum/(simTime*1000))
+            ax1.bar(filename.split('_R')[0].split('Admission')[-1], groupKbitsSum/(simTime*1000), width=1, color=colors[testNum])
+            groupNum += 1
+            testNum += 1
+
+        preOutPath = '../exports/plots/groupTPs/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        # ax1.legend()
+        # plt.legend(fontsize=20)
+        ax1.grid()
+        plt.xticks(rotation=90)
+        plt.xlabel('Test Name')
+        plt.ylabel('Average ' + direction[0] + ' Throughput [mbps]')
+        outPath = preOutPath+outName+name+'.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+        plt.close('all')
+
+    # df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, 'throughputs', '_' + direction[0])
+    # fig, ax1 = partialCDFBegin(1)
+    # maxTPS = 0
+    # for nodeType,numNodes in zip(nodeTypes,nodeSplit):
+    #     tempTPSall = []
+    #     for nodeNum in range(numNodes):
+    #         colName = direction[0] + " Throughput " + makeNodeIdentifier(nodeType, nodeNum)
+    #         tempTPSall.append(statistics.mean([x/1000 for x in df[colName].tolist()[:int(cutoff)+1]]))
+    #     if maxTPS < max(tempTPSall):
+    #         maxTPS = max(tempTPSall)
+    #     partialCDFPlotData(fig, ax1, tempTPSall, chooseName(nodeType), '-o', chooseColor(nodeType))
+
+    # ax1.set_xlim(0,1.01*maxTPS)
+    # partialCDFEnd(fig,ax1,'', 'Mean Client Throughput [mbps]', '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdfMean'+direction[0]+'ThroughputsCutoff'+ str(cutoff) + str(nodeTypes) + '.pdf')
+    # partialCDFEndPNG(fig,ax1,'', 'Mean Client Throughput [mbps]', '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdfMean'+direction[0]+'ThroughputsCutoff'+ str(cutoff) + str(nodeTypes) + '.png')
+
+plotClassTPSbarDirection(['qoeAdmissionAutoNo', 'qoeAdmission3-4delBandNo'], 'throughputs', downlink, [['VIP'],['SSH'], ['VID'], ['LVD'], ['FDO']], ['VoIP', 'SSH', 'VoD', 'Live', 'Download'], 400)
+# plotClassTPSbarDirection(['qoeAdmissionAutoNo', 'qoeAdmission3-4delBandNo'], 'throughputs', downlink, [['VIP','SSH'], ['VID', 'LVD', 'FDO']], ['Delay', 'Bandwidth'], 400)
 
 # linkSpeeds = [100, 200]
 # ceil = [100, 110, 125, 140]
@@ -2180,5 +2323,10 @@ plotQueueLengthCDF('qoeAdmissionAutoNo1','routerSCA')
 # #         plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelLC', 100, [ceil], [q], 400, False)
 # #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
 # #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
+        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
+        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
+        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
+        # plotUtilVsSlicesSplit('qoeAdmission3-4delBand', 100, [ceil], [q], 400, False)
 
 # print([100+x*20 for x in range(226)])
