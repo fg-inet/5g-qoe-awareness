@@ -2257,8 +2257,104 @@ def plotClassTPSbarDirection(testNamePrefixes, dataType, direction, hostConfigTo
     # partialCDFEnd(fig,ax1,'', 'Mean Client Throughput [mbps]', '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdfMean'+direction[0]+'ThroughputsCutoff'+ str(cutoff) + str(nodeTypes) + '.pdf')
     # partialCDFEndPNG(fig,ax1,'', 'Mean Client Throughput [mbps]', '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdfMean'+direction[0]+'ThroughputsCutoff'+ str(cutoff) + str(nodeTypes) + '.png')
 
-plotClassTPSbarDirection(['qoeAdmissionAutoNo', 'qoeAdmission3-4delBandNo'], 'throughputs', downlink, [['VIP'],['SSH'], ['VID'], ['LVD'], ['FDO']], ['VoIP', 'SSH', 'VoD', 'Live', 'Download'], 400)
+# plotClassTPSbarDirection(['qoeAdmissionAutoNo', 'qoeAdmission3-4delBandNo'], 'throughputs', downlink, [['VIP'],['SSH'], ['VID'], ['LVD'], ['FDO']], ['VoIP', 'SSH', 'VoD', 'Live', 'Download'], 400)
 # plotClassTPSbarDirection(['qoeAdmissionAutoNo', 'qoeAdmission3-4delBandNo'], 'throughputs', downlink, [['VIP','SSH'], ['VID', 'LVD', 'FDO']], ['Delay', 'Bandwidth'], 400)
+
+def plotCliTPdirection(testNamePrefix, direction, simTime):
+    # print(prePath)
+    prePath = '../exports/extracted/throughputs/'
+    filenames = [x for x in glob.glob(prePath+testNamePrefix+'*') if direction[0] in x]
+
+    times = range(1,simTime+1,1)
+    index = 0
+    for filename in filenames:
+        preOutPath = '../exports/plots/TPs/'+testNamePrefix+str(index)+'/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        print(filename)
+        # temp = filename.split('VID')[1]
+        # numVID = int(temp.split('_')[0])
+        # temp = temp.split('LVD')[1]
+        # numLVD = int(temp.split('_')[0])
+        # temp = temp.split('FDO')[1]
+        # numFDO = int(temp.split('_')[0])
+        # temp = temp.split('SSH')[1]
+        # numSSH = int(temp.split('_')[0])
+        # temp = temp.split('VIP')[1]
+        # numVIP = int(temp.split('_')[0])
+        runDF = pd.read_csv(filename, comment='*')
+        groupKbitsSum = 0
+        for hostType in ['VIP','SSH', 'VID', 'LVD', 'FDO']:
+            # tpList = runDF.filter(like=hostType).sum(axis=1).tolist()
+            dfType = runDF.filter(like=hostType)
+            for column in dfType.columns:
+                tpList = dfType[column].tolist()
+                fig, ax1 = plt.subplots(1, figsize=(16,12))
+                ax1.plot(times, tpList, label=column, marker='o', ls='-')
+                plt.legend(fontsize=20)
+                ax1.grid()
+                ax1.set_xlim(0,100)
+                ax1.set_ylim(0,3100)
+                plt.xlabel('Time [s]')
+                plt.ylabel(direction[0] + ' Throughput [kbps]')
+                outName = 'TP ' + column + direction[0]
+                outPath = preOutPath+outName+'.png'
+                fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+                plt.close('all')
+        index += 1
+
+
+# plotCliTPdirection('qoeAdmissionAutoNo1Base', downlink, 400)
+# testNames = ['qoeAdmissionAutoNo1Base', 'qoeAdmissionAutoNo2_2sli', 'qoeAdmissionAutoNo3_5sli', 'qoeAdmission3-4delBandNo1Base', 'qoeAdmission3-4delBandNo2_2sli', 'qoeAdmission3-4delBandNo3_5sli']
+testNames = ['qoeAdmissionAutoNo2_2sli', 'qoeAdmission3-4delBandNo2_2sli', 'qoeAdmissionAuto40msNo2_2sli', 'qoeAdmission3-4delBand40msNo2_2sli']
+for testName in testNames:
+    plotCliTPdirection(testName, downlink, 400)
+
+
+def plotClassTPdirection(testNamePrefix, direction, simTime):
+    # print(prePath)
+    prePath = '../exports/extracted/throughputs/'
+    filenames = [x for x in glob.glob(prePath+testNamePrefix+'*') if direction[0] in x]
+
+    times = range(1,simTime+1,1)
+    index = 0
+    for filename in filenames:
+        preOutPath = '../exports/plots/TPs/'+testNamePrefix+str(index)+'/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        print(filename)
+        # temp = filename.split('VID')[1]
+        # numVID = int(temp.split('_')[0])
+        # temp = temp.split('LVD')[1]
+        # numLVD = int(temp.split('_')[0])
+        # temp = temp.split('FDO')[1]
+        # numFDO = int(temp.split('_')[0])
+        # temp = temp.split('SSH')[1]
+        # numSSH = int(temp.split('_')[0])
+        # temp = temp.split('VIP')[1]
+        # numVIP = int(temp.split('_')[0])
+        runDF = pd.read_csv(filename, comment='*')
+        groupKbitsSum = 0
+        fig, ax1 = plt.subplots(1, figsize=(16,12))
+        for hostType in ['VIP','SSH', 'VID', 'LVD', 'FDO']:
+            tpList = runDF.filter(like=hostType).sum(axis=1).tolist()
+            ax1.plot(times, [x/1000 for x in tpList], label=hostType + 'class', marker='o', ls='-')
+            
+        plt.legend(fontsize=20)
+        ax1.grid()
+        plt.xlabel('Time [s]')
+        plt.ylabel(direction[0] + ' Throughput [mbps]')
+        outName = 'TPclass ' + direction[0]
+        outPath = preOutPath+outName+'.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+        plt.close('all')
+        index += 1
+
+# plotClassTPdirection('qoeAdmissionAutoNo1Base', downlink, 400)
+# testNames = ['qoeAdmissionAutoNo1Base', 'qoeAdmissionAutoNo2_2sli', 'qoeAdmissionAutoNo3_5sli', 'qoeAdmission3-4delBandNo1Base', 'qoeAdmission3-4delBandNo2_2sli', 'qoeAdmission3-4delBandNo3_5sli']
+# for testName in testNames:
+#     plotClassTPdirection(testName, downlink, 400)
+
 
 # linkSpeeds = [100, 200]
 # ceil = [100, 110, 125, 140]

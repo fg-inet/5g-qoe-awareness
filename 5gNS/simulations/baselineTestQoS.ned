@@ -75,7 +75,8 @@ network baselineTestQoS
         }
     connections:
 //        router0.pppg++ <--> connFIX0: C { datarate = 100Mbps; delay = 1ms; } <--> router1.pppg++;
-		router0.pppg++ <--> connFIX0: C { delay = 1ms; } <--> router1.pppg++;
+//		router0.pppg++ <--> connFIX0: C { delay = 1ms; } <--> router1.pppg++;
+		router0.pppg++ <--> connFIX0: C {  } <--> router1.pppg++;
 
         for i=0..nVID-1 {
             hostVID[i].pppg++ <--> C {  datarate = 1Gbps; delay = 100ns; } <--> router0.pppg++;
