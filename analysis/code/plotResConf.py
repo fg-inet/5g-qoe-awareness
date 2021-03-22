@@ -188,7 +188,8 @@ niceDataTypeName = {
     'PlDel' : 'Playout Delay [s]',
     'PlLR' : 'Playout Loss Rate',
     'TDLR' : 'Taildrop Loss Rate',
-    'rtt' : 'Round Trip Time [s]'
+    'rtt' : 'Round Trip Time [s]',
+    'rto' : 'Retransmission Timeout [???]'
 }
 
 def plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot):
@@ -2294,7 +2295,10 @@ def plotCliTPdirection(testNamePrefix, direction, simTime):
                 plt.legend(fontsize=20)
                 ax1.grid()
                 ax1.set_xlim(0,100)
-                ax1.set_ylim(0,3100)
+                if hostType == 'VIP':
+                    ax1.set_ylim(0,150)
+                else:    
+                    ax1.set_ylim(0,3100)
                 plt.xlabel('Time [s]')
                 plt.ylabel(direction[0] + ' Throughput [kbps]')
                 outName = 'TP ' + column + direction[0]

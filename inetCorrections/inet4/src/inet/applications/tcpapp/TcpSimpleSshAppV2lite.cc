@@ -124,19 +124,21 @@ void TcpSimpleSshAppV2lite::handleTimer(cMessage *msg)
                 checkedScheduleAt(simTime() + par("keyPressDelay"), timeoutMsg);
             }
             else {
-                EV_INFO << "user hits Enter key\n";
-                // Note: reply length must be at least 2, otherwise we'll think
-                // it's an echo when it comes back!
-                int tempReqRepLength = 10 + 1 + par("commandOutputLength").intValue();
-                int padLen = 0;
-                if (16 - (tempReqRepLength % 16) < 4) {
-                    padLen = 32 - (tempReqRepLength % 16);
-                } else {
-                    padLen = 16 - (tempReqRepLength % 16);
+                if (socket.getState() != 6) {
+                    EV_INFO << "user hits Enter key\n";
+                    // Note: reply length must be at least 2, otherwise we'll think
+                    // it's an echo when it comes back!
+                    int tempReqRepLength = 10 + 1 + par("commandOutputLength").intValue();
+                    int padLen = 0;
+                    if (16 - (tempReqRepLength % 16) < 4) {
+                        padLen = 32 - (tempReqRepLength % 16);
+                    } else {
+                        padLen = 16 - (tempReqRepLength % 16);
+                    }
+                    sendGenericAppMsg(40, tempReqRepLength + padLen);
+                    sendTime = simTime();
+                    numCharsToType = par("commandLength");
                 }
-                sendGenericAppMsg(40, tempReqRepLength + padLen);
-                sendTime = simTime();
-                numCharsToType = par("commandLength");
 
                 // Note: no checkedScheduleAt(), because user only starts typing next command
                 // when output from previous one has arrived (see socketDataArrived())

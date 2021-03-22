@@ -132,50 +132,55 @@ do
     fi
     
     echo "Exporting run $run_num which has $totalNum clients..."
-    for sliNum in $(eval echo "{$firstResult..$lastSlice}")
-    do
-        echo -e "\tExporting for resource link $sliNum:\t\t\c"
-        scavetool export -f "module(*router0.ppp[$sliNum]*) AND name(*xPk*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_resAllocLink${sliNum}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
-    # scavetool export -f "(module(*router0.ppp[0]*) AND name(*xPk*)) OR (module(*router0.ppp[1]*) AND name(*xPk*)) OR (module(*router0.ppp[2]*) AND name(*xPk*)) OR (module(*router0.ppp[3]*) AND name(*xPk*))"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_links_vec.csv ${sourceFolder}/*-${run_num}.vec
-    # echo -e "\tExporting for server serverSSH:\t\t\c"
-    # scavetool export -f "(module(*serverSSH*) AND name(*RTO*)) OR (module(*serverSSH*) AND name(*advertised*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverSSH_vec.csv ${sourceFolder}/*-${run_num}.vec
-    echo -e "\tExporting for server serverVID:\t\t\c"
-    scavetool export -f "(module(*serverVID*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverVID_vec.csv ${sourceFolder}/*-${run_num}.vec
-    echo -e "\tExporting for server serverLVD:\t\t\c"
-    scavetool export -f "(module(*serverLVD*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverLVD_vec.csv ${sourceFolder}/*-${run_num}.vec
-    echo -e "\tExporting for server serverFDO:\t\t\c"
-    scavetool export -f "(module(*serverFDO*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverFDO_vec.csv ${sourceFolder}/*-${run_num}.vec
-    echo -e "\tExporting for router0:\t\t\c"
-    scavetool export -f "module(*router0.ppp[0]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router0_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # for sliNum in $(eval echo "{$firstResult..$lastSlice}")
+    # do
+    #     echo -e "\tExporting for resource link $sliNum:\t\t\c"
+    #     scavetool export -f "module(*router0.ppp[$sliNum]*) AND name(*xPk*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_resAllocLink${sliNum}_vec.csv ${sourceFolder}/*-${run_num}.vec
+        
+    # done
+    # echo -e "\tExporting dequeueIndex for router0:\t\t\c"
+    # scavetool export -f "module(*router0*) AND name(*dequeueIndex*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router0_dI_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # echo -e "\tExporting dequeueIndex for router1:\t\t\c"
+    # scavetool export -f "module(*router1*) AND name(*dequeueIndex*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router1_dI_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # # scavetool export -f "(module(*router0.ppp[0]*) AND name(*xPk*)) OR (module(*router0.ppp[1]*) AND name(*xPk*)) OR (module(*router0.ppp[2]*) AND name(*xPk*)) OR (module(*router0.ppp[3]*) AND name(*xPk*))"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_links_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # # echo -e "\tExporting for server serverSSH:\t\t\c"
+    # # scavetool export -f "(module(*serverSSH*) AND name(*RTO*)) OR (module(*serverSSH*) AND name(*advertised*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverSSH_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # echo -e "\tExporting for server serverVID:\t\t\c"
+    # scavetool export -f "(module(*serverVID*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverVID_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # echo -e "\tExporting for server serverLVD:\t\t\c"
+    # scavetool export -f "(module(*serverLVD*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverLVD_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # echo -e "\tExporting for server serverFDO:\t\t\c"
+    # scavetool export -f "(module(*serverFDO*tcp*))" -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_serverFDO_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # echo -e "\tExporting for router0:\t\t\c"
+    # scavetool export -f "module(*router0*) AND name(*queueLength*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router0_qL_vec.csv ${sourceFolder}/*-${run_num}.vec
     echo -e "\tExporting for router1:\t\t\c"
-    scavetool export -f "module(*router1.ppp[0]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router1_vec.csv ${sourceFolder}/*-${run_num}.vec
+    scavetool export -f "module(*router1.ppp[0]*) AND name(*queueLength*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_router1_qL_vec.csv ${sourceFolder}/*-${run_num}.vec
     
-    for cli_num in $(eval echo "{$firstResult..$lastVID}")
-    do
-        echo -e "\tExporting for video client $cli_num:\t\t\c"
-        scavetool export -f "module(*hostVID[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostVID${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
-    for cli_num in $(eval echo "{$firstResult..$lastLVD}")
-    do
-        echo -e "\tExporting for live video client $cli_num:\t\t\c"
-        scavetool export -f "module(*hostLVD[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostLVD${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
-    for cli_num in $(eval echo "{$firstResult..$lastFDO}")
-    do
-        echo -e "\tExporting for file download client $cli_num:\t\c"
-        scavetool export -f "module(*hostFDO[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostFDO${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
-    for cli_num in $(eval echo "{$firstResult..$lastSSH}")
-    do
-        echo -e "\tExporting for SSH client $cli_num:\t\t\c"
-        scavetool export -f "module(*hostSSH[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostSSH${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
-    for cli_num in $(eval echo "{$firstResult..$lastVIP}")
-    do
-        echo -e "\tExporting for VoIP client $cli_num:\t\t\c"
-        scavetool export -f "module(*hostVIP[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostVIP${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
-    done
+    # for cli_num in $(eval echo "{$firstResult..$lastVID}")
+    # do
+    #     echo -e "\tExporting for video client $cli_num:\t\t\c"
+    #     scavetool export -f "module(*hostVID[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostVID${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # done
+    # for cli_num in $(eval echo "{$firstResult..$lastLVD}")
+    # do
+    #     echo -e "\tExporting for live video client $cli_num:\t\t\c"
+    #     scavetool export -f "module(*hostLVD[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostLVD${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # done
+    # for cli_num in $(eval echo "{$firstResult..$lastFDO}")
+    # do
+    #     echo -e "\tExporting for file download client $cli_num:\t\c"
+    #     scavetool export -f "module(*hostFDO[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostFDO${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # done
+    # for cli_num in $(eval echo "{$firstResult..$lastSSH}")
+    # do
+    #     echo -e "\tExporting for SSH client $cli_num:\t\t\c"
+    #     scavetool export -f "module(*hostSSH[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostSSH${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # done
+    # for cli_num in $(eval echo "{$firstResult..$lastVIP}")
+    # do
+    #     echo -e "\tExporting for VoIP client $cli_num:\t\t\c"
+    #     scavetool export -f "module(*hostVIP[$cli_num]*)"  -F CSV-S -o ${resultsFolder}/${subfolderName}/vectors/${experimentDescriptor}_${totalNum}_VID${nVID}_LVD${nLVD}_FDO${nFDO}_SSH${nSSH}_VIP${nVIP}_hostVIP${cli_num}_vec.csv ${sourceFolder}/*-${run_num}.vec
+    # done
 
 done
 

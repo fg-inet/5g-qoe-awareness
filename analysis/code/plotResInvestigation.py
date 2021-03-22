@@ -10,9 +10,11 @@ from scipy import stats
 import os,sys,inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
-print(parentdir)
+# print(parentdir)
 sys.path.insert(0,parentdir) 
-from algorithm import algorithm as algo
+# from algorithm import algorithm as algo
+
+import glob
 
 font = {'weight' : 'normal',
         'size'   : 40}
@@ -140,7 +142,7 @@ def chooseName(dataName):
         return 'Return Link'
 
 colormap = plt.get_cmap('Set1').colors
-print(colormap)
+# print(colormap)
 colorMapping = {
     'VID' : colormap[0],
     'LVD' : colormap[1], 
@@ -208,7 +210,10 @@ niceDataTypeName = {
     'nRto' : 'Number of Retransmissions',
     'cwnd' : 'Congestion Window',
     'srtt' : 'Smoothed Rounf Trip Time [s]',
-    'rttvar' : 'Round Trip Time Variance'
+    'rttvar' : 'Round Trip Time Variance',
+    'rto' : 'Retransmission Timeout [s]',
+    'qL' : 'Queue Length [packets]',
+    'interDepartureTime' : 'Inter-Departure Time [s]'
 }
 
 def plotMeanDataTypeCdfAllApps(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot):
@@ -946,7 +951,6 @@ def plotDataTypeCdfServerAllApps(testName, numCLI, nodeTypes, nodeSplit, dataIde
 
 def plotDataTypeTimeseriesTCPServerAllAppsOneSession(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
     dfServ = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, 'server')
-    # dfHost = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
     fig, ax1 = partialCDFBegin(1)
     for nodeType in nodeTypesToPlot:
         tempDF = dfServ.filter(like='server'+nodeType).iloc[:,[0,1]]
@@ -957,24 +961,19 @@ def plotDataTypeTimeseriesTCPServerAllAppsOneSession(testName, numCLI, nodeTypes
         if len(times) > 0:
             print(dataIdent, nodeType, connNo, times[0], times[-1], values[0], values[-1])
         ax1.plot(times, values, 'o',label=chooseName('host'+nodeType)+' '+connNo)
-        # print(list(tempDF.iloc[:,[0,1]]))
 
-
-        # sessionName = 'c'+list(tempDF)[0].split(str(numNodeToPlot)+' c')[-1].split(' T')[0]
-        # print(sessionName)
-        # print(list(dfServ))
-        # plotDF = dfServ.filter(like=sessionName)
-        # print(list(plotDF))
-    #     colName = makeNodeIdentifier(nodeType, -1) + " " + dataIdent + " Val"
-    #     tempValue.extend(df[colName].dropna().tolist())
-    #     # print(tempValue)
-    #     if len(tempValue) > 0:
-    #         if maxValue < max(tempValue):
-    #             maxValue = max(tempValue)
-    #         partialCDFPlotData(fig, ax1, tempValue, chooseName(nodeType), '-o', chooseColor(nodeType))
     if dataIdent == 'rtt':
         ax1.set_xlim(0,100)
         ax1.set_ylim(0,0.275)
+    elif dataIdent == 'rttvar':
+        ax1.set_xlim(0,100)
+        ax1.set_ylim(0,0.7)
+    elif dataIdent == 'srtt':
+        ax1.set_xlim(0,100)
+        ax1.set_ylim(0,0.14)
+    elif dataIdent == 'rto':
+        ax1.set_xlim(0,100)
+        ax1.set_ylim(0.95,3)
     plt.legend(fontsize=20)
     ax1.grid()
     plt.xlabel('Time [s]')
@@ -983,9 +982,235 @@ def plotDataTypeTimeseriesTCPServerAllAppsOneSession(testName, numCLI, nodeTypes
     plt.close('all')
 
 
-    # # partialCDFEnd(fig,ax1,'', 'Client ' + niceDataTypeName[dataIdent], '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + '.pdf')
-    # partialCDFEndPNG(fig,ax1,'', 'Server ' + niceDataTypeName[dataIdent], '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + 'server.png')
+def plotCliTPdirectionFineVoIP(testNamePrefix, direction, simTime):
+    # print(prePath)
+    prePath = '../exports/extracted/throughputs/'
+    filenames = [x for x in [x for x in glob.glob(prePath+testNamePrefix+'*') if direction[0] in x] if 'hostVIP' in x]
+    print(filenames)
+    times = [0.1*x for x in range(1,10*simTime,1)]
+    index = 0
+    for filename in filenames:
+        preOutPath = '../exports/plots/TPs/'+testNamePrefix+str(index)+'/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        print(filename)
+        runDF = pd.read_csv(filename, comment='*')
+        groupKbitsSum = 0
+        for hostType in ['VIP']:
+            # tpList = runDF.filter(like=hostType).sum(axis=1).tolist()
+            dfType = runDF.filter(like=hostType)
+            for column in dfType.columns:
+                tpList = dfType[column].tolist()
+                fig, ax1 = plt.subplots(1, figsize=(16,12))
+                ax1.plot(times, tpList, label=column, marker='o', ls='-')
+                plt.legend(fontsize=20)
+                ax1.grid()
+                ax1.set_xlim(0,100)
+                if hostType == 'VIP':
+                    ax1.set_ylim(0,80)
+                else:    
+                    ax1.set_ylim(0,3100)
+                plt.xlabel('Time [s]')
+                plt.ylabel(direction[0] + ' Throughput [kbps]')
+                outName = 'TP ' + column + direction[0]
+                outPath = preOutPath+outName+'.png'
+                fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+                plt.close('all')
+        index += 1
 
+def plotdequeueIndexAppType(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
+    df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+    fig, ax1 = partialCDFBegin(1)
+    for nodeType in nodeTypesToPlot:
+        tempDF = df.filter(like=nodeType).iloc[:,[0,1]]
+        print(list(tempDF))
+        times = tempDF.filter(like='TS').dropna().iloc[:,0].tolist()
+        values = tempDF.filter(like='Val').dropna().iloc[:,0].tolist()
+        ax1.plot(times, values, 'o',label=chooseName('host'+nodeType))
+
+    plt.legend(fontsize=20)
+    ax1.grid()
+    plt.xlabel('Time [s]')
+    plt.ylabel('Cumulative Number of Dequeues')
+    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_timeSeriesCumulative' + dataIdent + str(nodeTypesToPlot) + 'dequeueIndex.png', dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotdequeueRateAppType(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
+    df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+    fig, ax1 = partialCDFBegin(1)
+    # times = [x for x in range(0,400,1)]
+    times = [0.1*x for x in range(1,10*400,1)]
+    for nodeType in nodeTypesToPlot:
+        tempDF = df.filter(like=nodeType).iloc[:,[0,1]]
+        print(list(tempDF))
+        tB = [0,0.1]
+        rates = []
+        while tB[1] <= 400:
+            # if DEBUG: print(tB, end =" -> Throughput: ")
+            # print(tempDF.columns[0])
+            theDF = tempDF.loc[(tempDF[tempDF.columns[0]] > tB[0]) & (tempDF[tempDF.columns[0]] <= tB[1])]
+            rates.append(len(theDF.index))
+            # tpDirDF = tpDirDF.append({colName : throughput*8/100}, ignore_index=True)
+            # if DEBUG: print(throughput*8/1000, end=" kbps\n")
+            tB = [x+0.1 for x in tB]
+        
+        ax1.plot(times, rates, '-',label=chooseName('host'+nodeType))
+
+    plt.legend(fontsize=20)
+    ax1.set_xlim(0,100)
+    ax1.grid()
+    plt.xlabel('Time [s]')
+    plt.ylabel('Dequeue Rate [1/s]')
+    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_rates' + dataIdent + str(nodeTypesToPlot) + 'dequeueIndex.png', dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotinterDepartureTimeAppType(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
+    df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '_'+str(nodeTypesToPlot))
+    fig, ax1 = partialCDFBegin(1)
+    for nodeType in nodeTypesToPlot:
+        tempDF = df.filter(like=nodeType+str(numNodeToPlot)).iloc[:,[0,1]]
+        print(list(tempDF))
+        times = tempDF[nodeType + str(numNodeToPlot) + " " + dataIdent + " TS"].tolist()[1:]
+        idt = tempDF[nodeType + str(numNodeToPlot) + " " + dataIdent + " Val"].tolist()[1:]
+        ax1.plot(times, idt, 'o',label=chooseName('host'+nodeType)+' '+str(numNodeToPlot))
+
+    plt.legend(fontsize=20)
+    ax1.set_xlim(0,40)
+    ax1.set_ylim(0,0.04)
+
+    ax1.grid()
+    plt.xlabel('Time [s]')
+    plt.ylabel('Inter-Departure Time [s]')
+    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_interDepartureTime' + dataIdent + str(nodeTypesToPlot) + 'host' + str(numNodeToPlot) + 'hiRes40s.png', dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotdequeueRateAppTypeDiff(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
+    tN1 = testName.split('Auto')
+    df = importDFextended(tN1[0]+'Auto'+tN1[1], numCLI, nodeTypes, nodeSplit, folderName, '')
+    df2 = importDFextended(tN1[0]+'3-4delBand'+tN1[1], numCLI, nodeTypes, nodeSplit, folderName, '')
+    fig, ax1 = partialCDFBegin(1)
+    # times = [x for x in range(0,400,1)]
+    times = [0.1*x for x in range(1,10*400,1)]
+    for nodeType in nodeTypesToPlot:
+        tempDF = df.filter(like=nodeType).iloc[:,[0,1]]
+        tempDF2 = df2.filter(like=nodeType).iloc[:,[0,1]]
+        print(list(tempDF))
+        tB = [0,0.1]
+        rates = []
+        while tB[1] <= 400:
+            # if DEBUG: print(tB, end =" -> Throughput: ")
+            # print(tempDF.columns[0])
+            theDF = tempDF.loc[(tempDF[tempDF.columns[0]] > tB[0]) & (tempDF[tempDF.columns[0]] <= tB[1])]
+            theDF2 = tempDF2.loc[(tempDF2[tempDF2.columns[0]] > tB[0]) & (tempDF2[tempDF2.columns[0]] <= tB[1])]
+            rates.append(len(theDF.index) - len(theDF2.index))
+            # tpDirDF = tpDirDF.append({colName : throughput*8/100}, ignore_index=True)
+            # if DEBUG: print(throughput*8/1000, end=" kbps\n")
+            tB = [x+0.1 for x in tB]
+        
+        ax1.plot(times, rates, '-',label=chooseName('host'+nodeType))
+
+    plt.legend(fontsize=20)
+    ax1.set_xlim(0,100)
+    if 'VIP' in nodeTypesToPlot:
+        ax1.set_ylim(-100,100)
+    else:
+        ax1.set_ylim(-250,250)
+    ax1.grid()
+    plt.xlabel('Time [s]')
+    plt.ylabel('Dequeue Rate Difference [1/s]')
+    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_rateDiff' + dataIdent + str(nodeTypesToPlot) + 'dequeueIndex.png', dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotDataTypeCdfAllAppsFlows(testName, numCLI, nodeTypes, nodeSplit, dataIdent, folderName, nodeTypesToPlot, numNodeToPlot):
+    df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '_'+str(nodeTypesToPlot))
+    fig, ax1 = partialCDFBegin(1)
+    maxValue = 0
+    for nodeType in nodeTypes:
+        if nodeType.split('host')[1] in nodeTypesToPlot:
+            tempValue = []
+            colName = nodeType.split('host')[1] + str(numNodeToPlot) + " " + dataIdent + " Val"
+            #  df.filter(like=nodeType+str(numNodeToPlot)).iloc[:,[0,1]]
+            # print(df[colName])
+            tempValue.extend(df[colName].dropna().tolist())
+            print('Variance:', np.var(tempValue))
+            print('Kurtosis:', stats.kurtosis(np.array(tempValue)))
+            print('Skewness:', stats.skew(np.array(tempValue)))
+            print('Mean:', np.mean(tempValue))
+            print('Median:', np.median(tempValue))
+
+            # print(tempValue)
+            if len(tempValue) > 0:
+                if maxValue < max(tempValue):
+                    maxValue = max(tempValue)
+                partialCDFPlotData(fig, ax1, tempValue, chooseName(nodeType), '-o', chooseColor(nodeType))
+    if dataIdent == 'Mos':
+        ax1.set_xlim(0.95,5.05)
+    else:
+        ax1.set_xlim(0,0.015)
+    # partialCDFEnd(fig,ax1,'', 'Client ' + niceDataTypeName[dataIdent], '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + '.pdf')
+    partialCDFEndPNG(fig,ax1,'', 'Client ' + niceDataTypeName[dataIdent], '../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_cdf' + dataIdent + str(nodeTypesToPlot) + '.png')
+
+def plotMultiMetricCli(testName, numCLI, nodeTypes, nodeSplit, dataIdents, folderNames, nodeTypeToPlot, numNodeToPlot):
+    fig, ax = plt.subplots(len(dataIdents), figsize=(22,12*len(dataIdents)), sharex=True)
+    # ax = list(ax1)
+    counter = 0
+    for dataIdent, folderName in zip(dataIdents,folderNames):
+        if dataIdent == 'interDepartureTime':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '_'+str([nodeTypeToPlot]))
+            ax[counter].set_ylim(0,0.2)
+            lT = '-'
+            nT = nodeTypeToPlot
+        elif dataIdent == 'qL':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(0,18)
+            lT = '-'
+            nT = nodeTypeToPlot
+        elif dataIdent == 'DABL':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(0,40)
+            lT = '-o'
+            nT = 'host'+nodeTypeToPlot
+        elif dataIdent == 'E2ED':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(0,14.5)
+            lT = '-o'
+            nT = 'host'+nodeTypeToPlot
+        elif dataIdent == 'DAVB':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(0,5000)
+            lT = '-o'
+            nT = 'host'+nodeTypeToPlot
+        elif dataIdent == 'rtt':
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(0,0.01)
+            lT = '-'
+            nT = 'host'+nodeTypeToPlot
+        else:
+            df = importDFextended(testName, numCLI, nodeTypes, nodeSplit, folderName, '')
+            ax[counter].set_ylim(bottom=0, auto=True)
+            lT = '-o'
+            nT = 'host'+nodeTypeToPlot
+        tempDF = df.filter(like=nodeTypeToPlot+str(numNodeToPlot)).iloc[:,[0,1]]
+        print(list(tempDF))
+        timesTemp = tempDF[nT + str(numNodeToPlot) + " " + dataIdent + " TS"].tolist()
+        idtTemp = tempDF[nT + str(numNodeToPlot) + " " + dataIdent + " Val"].tolist()
+        times = sorted(timesTemp)
+        idt = [x for _,x in sorted(zip(timesTemp,idtTemp))]
+        ax[counter].plot(times, idt, lT,label=chooseName('host'+nodeTypeToPlot)+' '+str(numNodeToPlot))
+        ax[counter].set(ylabel=niceDataTypeName[dataIdent])
+        ax[counter].set_xlim(30,50)
+        ax[counter].grid()
+        counter += 1
+
+    plt.legend(fontsize=20)
+    plt.xlabel('Time [s]')
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.05)
+    fig.suptitle(testName.split('No')[0].split('Admission')[1])
+    fig.subplots_adjust(top=0.96)
+
+    fig.savefig('../exports/plots/'+makeFullScenarioName(testName, numCLI, nodeTypes, nodeSplit)+'/'+str(globalCounter)+'_multiMetric' + str(dataIdents) + str(nodeTypeToPlot) + 'host' + str(numNodeToPlot) + 'hiRes40s.png', dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
 
 
 if __name__ == "__main__":
@@ -1003,14 +1228,28 @@ if __name__ == "__main__":
     # plotDataTypeCdfServerAllApps(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'nRto', 'nRto', ['serverVID', 'serverLVD', 'serverFDO'])
     # plotDataTypeCdfServerAllApps(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'cwnd', 'cwnd', ['serverVID', 'serverLVD', 'serverFDO'])
     
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dAck', 'dAckSes', ['VID', 'LVD', 'FDO'], 0)
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'nRto', 'nRtoSes', ['VID', 'LVD', 'FDO'], 0)
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'cwnd', 'cwndSes', ['VID', 'LVD', 'FDO'], 0)
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'rtt', 'rttSes', ['VID', 'LVD', 'FDO'], 0)
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'srtt', 'srttSes', ['VID', 'LVD', 'FDO'], 0)
-    plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'rttvar', 'rttvarSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dAck', 'dAckSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'nRto', 'nRtoSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'cwnd', 'cwndSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'rtt', 'rttSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'srtt', 'srttSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'rttvar', 'rttvarSes', ['VID', 'LVD', 'FDO'], 0)
+    # plotDataTypeTimeseriesTCPServerAllAppsOneSession(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'rto', 'rtoSes', ['VID', 'LVD', 'FDO'], 0)
 
+    # plotdequeueIndexAppType(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dI', 'dI', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 0)
+    # plotdequeueRateAppType(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dI', 'dI', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 0)
+    # plotdequeueRateAppTypeDiff(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dI', 'dI', ['VIP', 'SSH'], 0)
+    # plotdequeueRateAppTypeDiff(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dI', 'dI', ['VID', 'LVD', 'FDO'], 0)
+    # plotCliTPdirectionFineVoIP(name, downlink, 400)
 
+    # plotinterDepartureTimeAppType(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VIP'], 0)
+    # plotinterDepartureTimeAppType(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VID'], 0)
+    # plotinterDepartureTimeAppType(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VIP'], 1)
+    # plotDataTypeCdfAllAppsFlows(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VID'], 0)
+    # plotDataTypeCdfAllAppsFlows(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VID'], 0)
+    # plotDataTypeCdfAllAppsFlows(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'interDepartureTime', 'interDepartureTime', ['VIP'], 0)
+
+    plotMultiMetricCli(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], ['interDepartureTime', 'qL', 'E2ED', 'DABL', 'DAVB'], ['interDepartureTime', 'qLVID', 'endToEndDelay', 'dabl', 'davb'], 'VID', 1)
 
     # plotMeanDataTypeCdfAllApps(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'dAck', 'dAck', ['hostVID', 'hostLVD', 'hostFDO'])
     # plotMeanDataTypeCdfAllApps(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'nRto', 'nRto', ['hostVID', 'hostLVD', 'hostFDO'])

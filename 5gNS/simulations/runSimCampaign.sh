@@ -27,6 +27,7 @@ then
    helpFunction
 fi
 
+# opp_runall -j${numThreads} -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
 opp_runall -j${numThreads} -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
 # opp_runall -j7 -b1 opp_run simpleNHost1ServerLinkUtilizationTest.ini -u Cmdenv -c voipCliSrvTestV2 -l ../../../../../installs/omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../../../installs/omnetpp-5.5.1/samples/inet4/src:../../../../../installs/omnetpp-5.5.1/samples/inet4/examples:../../../../../installs/omnetpp-5.5.1/samples/inet4/tutorials:../../../../../installs/omnetpp-5.5.1/samples/inet4/showcases -r $setDelay>9000000
 # opp_runall -j7 -b1 opp_run simpleNHost1ServerLinkUtilizationTest.ini -u Cmdenv -c sshClientTestV3 -l ../../../../../installs/omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../../../installs/omnetpp-5.5.1/samples/inet4/src:../../../../../installs/omnetpp-5.5.1/samples/inet4/examples:../../../../../installs/omnetpp-5.5.1/samples/inet4/tutorials:../../../../../installs/omnetpp-5.5.1/samples/inet4/showcases -r0..41
