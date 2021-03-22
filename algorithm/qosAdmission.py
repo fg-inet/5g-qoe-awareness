@@ -239,7 +239,9 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     configString += '*.router0.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR0 + '\n'
     configString += '*.router1.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR1 + '\n\n'
 
-    configString += '**.connFIX0.datarate = ' + str(availBand) + 'Mbps\n\n\n'
+    configString += '**.connFIX0.datarate = ' + str(availBand) + 'Mbps\n'
+    configString += '**.connFIX0.delay = 40ms\n\n\n'
+
     f = open(confName+".txt", "w")
     f.write(configString)
     f.close()
@@ -300,12 +302,12 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     f2.close()
 
 
-targetQoE = [3.5]
+targetQoE = [6.0]
 assuredMulti = [1.0]
 rates = [100]
 maxCliRate = [50]
-ceils = [1.4]
-dPrio = [True, False]
+ceils = [1.0,1.2,1.4]
+dPrio = [False]
 
 
 # targetQoE = [4.0, 3.5, 3.0]
@@ -318,6 +320,6 @@ for rate, maxCli in zip(rates, maxCliRate):
         for mult in assuredMulti:
             for ceil in ceils:
                 for dp in dPrio:
-                    # genAllSliConfigsHTBRun('qosAdmNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('qosAdmNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('qosAdmNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('qosAdmission40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('qosAdmission40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('qosAdmission40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
