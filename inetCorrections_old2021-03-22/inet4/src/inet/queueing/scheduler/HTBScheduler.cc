@@ -188,8 +188,7 @@ void HTBScheduler::initialize(int stage)
         int interfaceIndex = getParentModule()->getParentModule()->getParentModule()->getIndex();
         linkDatarate = getParentModule()->getParentModule()->getParentModule()->getParentModule()->gateByOrdinal(interfaceIndex)->getPreviousGate()->getChannel()->getNominalDatarate();
         EV_WARN << "SchedInit: Link datarate = " << linkDatarate << endl;
-        //register signal for dequeue index
-        dequeueIndexSignal = registerSignal("dequeueIndex");
+
         // Get all leaf queues. IMPORTANT: Leaf queue id MUST correspond to leaf class id!!!!!
         for (auto provider : providers) {
             collections.push_back(dynamic_cast<IPacketCollection *>(provider)); // Get pointers to queues
@@ -523,7 +522,6 @@ int HTBScheduler::schedulePacket() {
             if (levels[level]->nextToDequeue[prio] != NULL) { // Next to dequeue is always right. If it's not null, then we can dequeue something there. If it's null, we know there is nothing to dequeue.
 //                EV_WARN << "Dequeue - Found class to dequeue on level " << level << " and priority " << prio << endl;
                 dequeueIndex = htbDequeue(prio, level); // Do the dequeue in the HTB tree. Actual dequeue is done by the interface (I think)
-
             }
             if (dequeueIndex != -1) { // We found the first valid thing, just break!
 //                EV_WARN << "Dequeue - The class to dequeue (level = " << level << "; priority = " << prio << ") yielded a valid queue number " << dequeueIndex << " for dequeuing!" << endl;
@@ -548,9 +546,8 @@ int HTBScheduler::schedulePacket() {
 //            printLevel(elem, elem->levelId);
 //        }
 //    }
-    emit(dequeueIndexSignal, dequeueIndex);
-    return dequeueIndex; //index returned to the interface
 
+    return dequeueIndex;
 }
 
 // Activates a class for a priority. Only really called for leafs

@@ -37,7 +37,6 @@ namespace queueing {
 class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollection
 {
   protected:
-    simsignal_t dequeueIndexSignal;
     std::vector<IPacketCollection *> collections; // The actual queues
 
     static const int maxHtbDepth = 8; // The maximal amount of levels of htb tree
@@ -97,7 +96,6 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
         simsignal_t tokenBucket;
         simsignal_t ctokenBucket;
         simsignal_t classMode;
-
     };
 
     struct waitComp { // Comparator to sort the waiting classes according to their expected mode change time
@@ -130,8 +128,6 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
     virtual void initialize(int stage) override;
     virtual int schedulePacket() override;
     virtual void handleMessage(cMessage *msg) override;
-
-
 
   public:
     int classMode(htbClass *cl, long long *diff);
