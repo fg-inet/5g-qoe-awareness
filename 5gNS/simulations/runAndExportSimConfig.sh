@@ -64,10 +64,10 @@ cd ../../videoMOScalcFiles/code
 python3 recalcQoE.py ${config} ${name} # Now take care of both video clients
 cd ../..
 python3 remakeMOSexports.py ${config} ${name} # Remake the mos results to include recalculated values
-python3 parseResInvestigation.py ${config} ${slices} ${name}
+# python3 parseResInvestigation.py ${config} ${slices} ${name}
 
 ###### Plot basic plots ######
 python3 plotResNE.py ${config} ${slices} ${name} # Plot everything
-python3 plotResInvestigation.py ${config} ${slices} ${name} # Plot everything
+# python3 plotResInvestigation.py ${config} ${slices} ${name} # Plot everything
 
-echo "Simulation and exports are complete for ${config}";
+echo "Simulation, exports and initial plots are complete for ${config}";

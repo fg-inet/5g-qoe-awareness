@@ -836,9 +836,9 @@ if __name__ == "__main__":
 
     # extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'VID', [0,1,2,3,4], 'qL', 'qL', 'qLVID')
 
-    extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'endToEndDelay', 'E2ED', 'e2edVID')
-    extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'dabl', 'DABL', 'dablVID')
-    extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'davb', 'DAVB', 'davbVID')
+    # extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'endToEndDelay', 'E2ED', 'e2edVID')
+    # extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'dabl', 'DABL', 'dablVID')
+    # extractHTBdataFlowTypeToDF(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], 'hostVID', [0,1,2,3,4], 'davb', 'DAVB', 'davbVID')
 
     # extractInterDepartureTimeAppTypeDiff(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], ['VIP'], 'dIpF', 'interDepartureTime', 'interDepartureTime')
     # extractInterDepartureTimeAppTypeDiff(sys.argv[1], numVID + numLVD + numFDO + numSSH + numVIP, ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [numVID, numLVD, numFDO, numSSH, numVIP], ['VID'], 'dIpF', 'interDepartureTime', 'interDepartureTime')
