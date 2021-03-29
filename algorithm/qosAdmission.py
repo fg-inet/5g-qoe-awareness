@@ -30,7 +30,7 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultipli
             reqBitratesPerType[host] = 1575.0*1.2*guaranteeMultiplier # Second Highest Bitrate
             # reqBitratesPerType[host] = 1125.0 # Median Bitrate
         elif host == 'hostFDO':
-            reqBitratesPerType[host] = 500.0*guaranteeMultiplier # Arbitrary number
+            reqBitratesPerType[host] = 1300.0*guaranteeMultiplier # Arbitrary number
         print('QoS assumption for', host, 'is', reqBitratesPerType[host])
         numHostsPerType[host] = 0
     numSameRes = 0
@@ -320,6 +320,6 @@ for rate, maxCli in zip(rates, maxCliRate):
         for mult in assuredMulti:
             for ceil in ceils:
                 for dp in dPrio:
-                    genAllSliConfigsHTBRun('qosAdmission40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('qosAdmission40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('qosAdmission40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQosAdmissionNewDL40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQosAdmissionNewDL40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQosAdmissionNewDL40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
