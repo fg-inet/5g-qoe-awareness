@@ -903,8 +903,8 @@ def plotAll(testName, compTestName, nodeTypes, nodeSplit, numSlices, cutoff):
 
 
 # plotAll('baselineTest', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [50 for x in range(5)], 1, 400)
-plotAll('newHmsQoeAdm4-3xDelNo3_5sli_R100_Q35_M100_C200_PFalse', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,19,19,41,40], 1, 400)
-plotAll('newHmsQoeAdmNo3_5sli_R100_Q35_M100_C200_PFalse', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,19,19,31,30], 1, 400)
+# plotAll('newHmsQoeAdm4-3xDelNo3_5sli_R100_Q35_M100_C200_PFalse', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,19,19,41,40], 1, 400)
+# plotAll('newHmsQoeAdmNo3_5sli_R100_Q35_M100_C200_PFalse', '', ['hostVID', 'hostLVD', 'hostFDO', 'hostSSH', 'hostVIP'], [20,19,19,31,30], 1, 400)
 
 
 if __name__ == "__main__":
