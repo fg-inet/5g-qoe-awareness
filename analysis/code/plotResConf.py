@@ -1969,23 +1969,28 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
 def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs, tpMean):
     prePath = '../exports/extracted/'+dataType+'/'
     filenames = glob.glob(prePath+testPrefix+'*')
-    print(filenames)
+    # print(filenames)
     fig, ax = plt.subplots(1, figsize=(16,12))
 
     filterName = ''
     yAxName = ''
     outName = 'plotSlicesForCeilQsSplit_'+testPrefix+'_R'+str(linkSpeed)+'_C'+str(ceil)+'_Q'+str(qs)
     if dataType == 'throughputs':
+        print('\n\nPlot Clients Thorughput', end=' ')
         filterName = 'Throughput'
         yAxName = 'Client Thorughput [kbps]'
         outName += '_TPbox'
     elif dataType == 'mos2':
+        print('\n\nPlot Clients QoE', end=' ')
         filterName = 'Val'
         yAxName = 'Mean Client QoE'
         outName += '_QoEbox'
     else:
-        print('Invalid data type!!')
+        print('ERROR: Invalid data type!!')
         return
+
+    print('for Test:',testPrefix,'with ceil:',ceil,'and target QoE of:',qs)
+
 
     numCLIs = {}
     meanClassVals = {}
@@ -1996,8 +2001,8 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
     for filename in filenames:
         if 'Uplink' in filename: # Ignore uplink if throughputs
             continue
-        print(filename)
-        print('_R'+str(linkSpeed), '_Q'+str(qs), '_C'+str(ceil))
+        # print(filename)
+        # print('_R'+str(linkSpeed), '_Q'+str(qs), '_C'+str(ceil))
         if '_R'+str(linkSpeed) in filename and '_Q'+str(qs) in filename and '_C'+str(ceil) in filename:
             runName = filename.split('/')[-1].split('.')[0]
             print('Run:', runName)
@@ -2035,11 +2040,11 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
                 meanClassVals[runIdent].append(meanCliValues)
                 meanValsCI[runIdent].append(hi - statistics.mean(meanCliValues))
             # break
-    print(runIdents)
+    # print(runIdents)
     # print(numCLIs)
     # print(targetQoEs)
     # print(meanMOSs)
-    print(numSlices)
+    # print(numSlices)
 
     counter = 0
 
@@ -2125,23 +2130,27 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
 def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs, tpMean):
     prePath = '../exports/extracted/'+dataType+'/'
     filenames = glob.glob(prePath+testPrefix+'*')
-    print(filenames)
+    # print(filenames)
     fig, ax = plt.subplots(1, figsize=(16,12))
 
     filterName = ''
     yAxName = ''
     outName = 'plotClassSlicesForCeilQsSplit_'+testPrefix+'_R'+str(linkSpeed)+'_C'+str(ceil)+'_Q'+str(qs)
     if dataType == 'throughputs':
+        print('\n\nPlot Class Thorughput', end=' ')
         filterName = 'Throughput'
         yAxName = 'Client Thorughput [kbps]'
         outName += '_TPbox'
     elif dataType == 'mos2':
+        print('\n\nPlot Class QoE', end=' ')
         filterName = 'Val'
         yAxName = 'Mean Client QoE'
         outName += '_QoEbox'
     else:
-        print('Invalid data type!!')
+        print('ERROR: Invalid data type!!')
         return
+
+    print('for Test:',testPrefix,'with ceil:',ceil,'and target QoE of:',qs)
 
     numCLIs = {}
     meanClassVals = {}
@@ -2153,8 +2162,8 @@ def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, 
     for filename in filenames:
         if 'Uplink' in filename: # Ignore uplink if throughputs
             continue
-        print(filename)
-        print('_R'+str(linkSpeed), '_Q'+str(qs), '_C'+str(ceil))
+        # print(filename)
+        # print('_R'+str(linkSpeed), '_Q'+str(qs), '_C'+str(ceil))
         if '_R'+str(linkSpeed) in filename and '_Q'+str(qs) in filename and '_C'+str(ceil) in filename:
             runName = filename.split('/')[-1].split('.')[0]
             print('Run:', runName)
@@ -2214,11 +2223,11 @@ def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, 
                 meanClassVals[runIdent].append(meanCliValues)
                 meanValsCI[runIdent].append(hi - statistics.mean(meanCliValues))
             # break
-    print(runIdents)
+    # print(runIdents)
     # print(numCLIs)
     # print(targetQoEs)
     # print(meanMOSs)
-    print(numSlices)
+    # print(numSlices)
 
     counter = 0
 
@@ -2629,15 +2638,20 @@ def plotClassTPdirection(testNamePrefix, direction, simTime):
         # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
         # plotUtilVsSlicesSplit('qoeAdmission3-4delBand', 100, [ceil], [q], 400, False)
 
-for q in [30,35,40]:
-    for ceil in [100,120,140]:
-#         plotSlicesBoxForCeilQsSplit('expQoeAdmission40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-#         plotSlicesBoxForCeilQsSplit('expQoeAdmission40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-        plotClassSlicesBoxForCeilQsSplit('expQoeAdmission40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
+# Plot for QoE tests
+testNameQoE = 'expQoeAdmission40ms' # Name prefix of the QoE test
+targetQoEs = [30,35,40] # Target QoEs
+chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
+for q in targetQoEs:
+    for ceil in chosenCeilsQoE:
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
 
-for q in [60]:
-    for ceil in [100,120,140]:
-        # plotSlicesBoxForCeilQsSplit('expQosAdmissionNewDL40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-        # plotSlicesBoxForCeilQsSplit('expQosAdmissionNewDL40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-        plotClassSlicesBoxForCeilQsSplit('expQosAdmissionNewDL40ms', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-# print([100+x*20 for x in range(226)])
+testNameQoS = 'expQosAdmissionNewDL40ms' # Name prefix of the QoS test
+chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
+for q in [60]: # target QoE set to 60, so we still get nice plots and in my other tests the Q60 indicates a QoS test
+    for ceil in chosenCeilsQoS:
+        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        plotClassSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
