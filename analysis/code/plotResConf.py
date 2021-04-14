@@ -1769,7 +1769,7 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
             cl = 'black'
             if ceil1 == '110':
                 cl = 'green'
-            if ceil1 == '125':
+            if ceil1 == '120':
                 cl = 'blue'
             if ceil1 == '140':
                 cl = 'orange'
@@ -1780,7 +1780,10 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
             if tqoe == '40':
                 ls = 'dotted'
 
-            lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+            if int(tqoe) <= 50 and int(tqoe) >= 10:
+                lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+            else:
+                lbl = 'Ceil of: ' + ceil1 + '%; QoS allocation'
             
 
             arrNumSli = [1,2,3]
@@ -1791,7 +1794,105 @@ def plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
         preOutPath = '../exports/plots/tpConf/'
         if not os.path.exists(preOutPath):
             os.makedirs(preOutPath)
-        ax.set_ylim(80,100)
+        ax.set_ylim(60,100)
+        ticks = [1, 2, 3]
+        labels = [1,2,5]
+        plt.xticks(ticks, labels)
+        plt.legend(fontsize=20)
+        plt.xlabel('Number of Slices')
+        plt.ylabel("System Utilization [%]")
+        outPath = preOutPath+'meanUtilVsNumSlices_'+testPrefix+'_R'+str(linkSpeed)+'_C'+str(ceil)+'_P'+str(prio)+'.png'
+        fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+        plt.close('all')
+
+def plotUtilperClassVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+
+    
+    for ceil in ceils:
+        fig, ax = plt.subplots(1, figsize=(16,12))
+
+        numCLIs = {}
+        meanUtils = {}
+        targetQoEs = {}
+        numSlices = {}
+        runIdents = []
+        for q in qs:
+            print(q)
+            for filename in filenames:
+                print(filename)
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename and '_P'+str(prio) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanUtils[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                    # meanCliMOS = []
+                    
+                    # for col in mosValDF:
+                    #     meanCliMOS.append(statistics.mean(mosValDF[col].dropna().tolist()))
+
+                    # curveIdent = runIdent + '_Q' + str(tarQoE)
+                    # if curveIdent not in curveIdents:
+                    #     curveIdents.append(curveIdent)
+                    #     mosPlotVals[curveIdent] = []
+                    # mosPlotVals[curveIdent].append(statistics.mean(meanCliMOS))
+                    meanUtils[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime*linkSpeed*10))
+                    # break
+        print(numCLIs)
+        print(targetQoEs)
+        print(meanUtils)
+        print(numSlices)
+
+        for runIdent in runIdents:
+            # print(runIdent)
+            ceil1 = str(runIdent.split('C')[1].split('_Q')[0])
+            cl = 'black'
+            if ceil1 == '110':
+                cl = 'green'
+            if ceil1 == '120':
+                cl = 'blue'
+            if ceil1 == '140':
+                cl = 'orange'
+            tqoe = str(runIdent.split('_Q')[1])
+            ls = 'solid'
+            if tqoe == '35':
+                ls = 'dashed'
+            if tqoe == '40':
+                ls = 'dotted'
+
+            if int(tqoe) <= 50 and int(tqoe) >= 10:
+                lbl = 'Ceil of: ' + ceil1 + '%; Target QoE:' + str(float(tqoe)/10)
+            else:
+                lbl = 'Ceil of: ' + ceil1 + '%; QoS allocation'
+            
+
+            arrNumSli = [1,2,3]
+            arrMeanMos = [x for _,x in sorted(zip(numSlices[runIdent],meanUtils[runIdent]))]
+
+            ax.plot(arrNumSli, arrMeanMos, 's-', marker='s', linestyle=ls, color=cl, label=lbl)
+
+        preOutPath = '../exports/plots/tpConf/'
+        if not os.path.exists(preOutPath):
+            os.makedirs(preOutPath)
+        ax.set_ylim(60,100)
         ticks = [1, 2, 3]
         labels = [1,2,5]
         plt.xticks(ticks, labels)
@@ -2067,8 +2168,11 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
     for runIdent in runIdents:
         color = colorMapping[runIdent.split('_')[-1]]
 
-        arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
+        # arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
+        arrNumSli = [counter + 6*x for x in [0,1,2]]
         arrMeanVals = [x for _,x in sorted(zip(numSlices[runIdent],meanClassVals[runIdent]))]
+        # print('Before sort: ', numSlices[runIdent], [statistics.mean(x) for x in meanClassVals[runIdent]])
+        # print('After sort: ', arrNumSli, [statistics.mean(x) for x in arrMeanVals])
         arrYerrs = [x for _,x in sorted(zip(numSlices[runIdent],meanValsCI[runIdent]))]
 
         bp1 = ax.boxplot(arrMeanVals, positions=arrNumSli, notch=False, patch_artist=False,
@@ -2250,7 +2354,8 @@ def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, 
     for runIdent in runIdents:
         color = colorMapping[runIdent.split('_')[-1]]
 
-        arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
+        # arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
+        arrNumSli = [counter + 6*x for x in [0,1,2]]
         arrMeanVals = [x for _,x in sorted(zip(numSlices[runIdent],meanClassVals[runIdent]))]
         arrYerrs = [x for _,x in sorted(zip(numSlices[runIdent],meanValsCI[runIdent]))]
 
@@ -2642,16 +2747,18 @@ def plotClassTPdirection(testNamePrefix, direction, simTime):
 testNameQoE = 'expQoeAdmission40ms' # Name prefix of the QoE test
 targetQoEs = [30,35,40] # Target QoEs
 chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
-for q in targetQoEs:
-    for ceil in chosenCeilsQoE:
-        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
-        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
-        plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+# for q in targetQoEs:
+#     for ceil in chosenCeilsQoE:
+        # plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        # plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        # plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
 
 testNameQoS = 'expQosAdmissionNewDL40ms' # Name prefix of the QoS test
 chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
-for q in [60]: # target QoE set to 60, so we still get nice plots and in my other tests the Q60 indicates a QoS test
-    for ceil in chosenCeilsQoS:
-        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
-        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
-        plotClassSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+# for q in [60]: # target QoE set to 60, so we still get nice plots and in my other tests the Q60 indicates a QoS test
+#     for ceil in chosenCeilsQoS:
+#         plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+#         plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+#         plotClassSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+plotUtilVsSlicesSplit(testNameQoS, 100, chosenCeilsQoS, [60], 400, False) # Plot overall system utilization
