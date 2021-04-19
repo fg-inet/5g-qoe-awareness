@@ -2520,7 +2520,11 @@ def plotClassUtilizationForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed
         temp = [bps[0]]
         temp.extend([element[0] for element in bps[1:]])
         if relative == True:
-            ax.set_ylim(75,103)
+            ax.set_ylim(97,103)
+            # plt.yscale('log')
+            # plt.grid(True, axis='y', which='both')
+            loc = matplotlib.ticker.MultipleLocator(base=0.5) # this locator puts ticks at regular intervals
+            ax.yaxis.set_major_locator(loc)
             temp = [element[0] for element in bps]
 
     elif dataType == 'mos2':

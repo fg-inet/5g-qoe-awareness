@@ -1,12 +1,3 @@
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo1Base_R100_Q30_M100_C935_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo2_2sli_R100_Q30_M100_C935_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo3_5sli_R100_Q30_M100_C935_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo1Base_R100_Q35_M100_C940_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo2_2sli_R100_Q35_M100_C940_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo3_5sli_R100_Q35_M100_C940_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo1Base_R100_Q40_M100_C945_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo2_2sli_R100_Q40_M100_C945_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msQoErangeNo3_5sli_R100_Q40_M100_C945_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msLimitBandNo1Base_R100_Q30_M100_C100_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msLimitBandNo2_2sli_R100_Q30_M100_C100_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmission40msLimitBandNo3_5sli_R100_Q30_M100_C100_PFalse -s 1
