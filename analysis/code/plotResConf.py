@@ -2989,82 +2989,193 @@ def plotCountSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataTypeVID, dataType
     fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
     plt.close('all')
 
+ceilColorPalet = {100 : 'grey',
+                  120 : 'blue',
+                  140 : 'orange',
+                  935 : 'grey',
+                  940 : 'blue',
+                  945 : 'orange'}
+
+numSlicesBarStyle = {1 : '/',
+                     2 : '\\',
+                     5 : 'x'}
+
+def plotUtilVsSlicesBar(testPrefix, linkSpeed, ceils, qs, numSlis, simTime):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+    fig, ax = plt.subplots(1, figsize=(16,12))
+
+    numCLIs = {}
+    meanUtils = {}
+    targetQoEs = {}
+    numSlices = {}
+    runIdents = []
+    
+    for ceil in ceils:
+        for q in qs:
+            for filename in filenames:
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanUtils[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                    meanUtils[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime*linkSpeed*10))
+
+    for runIdent in runIdents:
+        # Get the ceiling multiplier and target QoE
+        ceil = int(runIdent.split('C')[1].split('_Q')[0])
+        tQoE = int(runIdent.split('_Q')[-1])
+        # Determine offset variables for bars
+        qoeOff = qs.index(tQoE) # values would be according to number of target qoe, so for [3.0, 3.5, 4.0] -> values 0 to 2
+        ceilOff = ceils.index(ceil) # values would be according to number of investigated ceils, so for [100, 120, 140] -> values 0 to 2
+
+        cl = ceilColorPalet[ceil] # color according to ceil
+
+        #Go over all slicing configs within run
+        for sliceNum in numSlices[runIdent]:
+            sliceOff = numSlis.index(sliceNum) # values would be according to number of investigated slicing configs, so for [1,2,5] -> values 1 to 3
+            st = numSlicesBarStyle[sliceNum] # style according to num slices
+            xPosition = qoeOff * (len(numSlis) * len(ceils) + 1) + sliceOff * len(numSlis) + ceilOff
+            barHeight = meanUtils[runIdent][numSlices[runIdent].index(sliceNum)]
+            lbl = str(sliceNum) + ' Slices; Ceil of: ' + str(ceil) + '%; Target QoE:' + str(float(tQoE)/10)
+            print(ceil, tQoE, sliceNum, ';', qoeOff, ceilOff, sliceOff, '=', xPosition, ';', cl, st, ':', barHeight, '\n ---', lbl) # Debug print
+
+            # ax.bar(xPosition, barHeight, color=cl, edgecolor='black', hatch=st, label=lbl)
+            ax.bar(xPosition, barHeight, color=cl, edgecolor='black', hatch=st)
+
+    for ceil in ceils:
+        if ceil > 900:
+            ax.bar(-10,5,color=ceilColorPalet[ceil], edgecolor='black', label='Ceil QoE of: ' + str(float(ceil-900)/10) + '%')
+        else:    
+            ax.bar(-10,5,color=ceilColorPalet[ceil], edgecolor='black', label='Ceil of: ' + str(ceil) + '%')
+    for sliceNum in numSlis:
+        ax.bar(-10,5,color='white', edgecolor='black', hatch=numSlicesBarStyle[sliceNum], label=str(sliceNum)+' Slices')
+
+    preOutPath = '../exports/plots/sysUtilBar/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    ax.set_ylim(50,100)
+    ax.set_xlim(-1,(len(numSlis)*len(ceils)+1)*len(qs)-1)
+    ticks = [len(numSlis)*len(ceils)*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
+    ax.vlines([len(numSlis)*len(ceils)*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
+    labels = [float(x)/10 if x <= 50 and x >= 10 else '-' for x in qs]
+
+    plt.xticks(ticks, labels)
+    plt.legend(fontsize=25)
+    plt.xlabel('Target QoE')
+    plt.ylabel("Overall System Utilization [%]")
+    outPath = preOutPath+'sysUtil'+testPrefix+'_R'+str(linkSpeed)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
 
 
-# plotClassTPdirection('qoeAdmissionAutoNo1Base', downlink, 400)
-# testNames = ['qoeAdmissionAutoNo1Base', 'qoeAdmissionAutoNo2_2sli', 'qoeAdmissionAutoNo3_5sli', 'qoeAdmission3-4delBandNo1Base', 'qoeAdmission3-4delBandNo2_2sli', 'qoeAdmission3-4delBandNo3_5sli']
-# for testName in testNames:
-#     plotClassTPdirection(testName, downlink, 400)
+def plotRelativeUtilVsSlicesBar(testPrefix, linkSpeed, ceils, qs, numSlis, simTime):
+    prePath = '../exports/extracted/throughputs/'
+    filenames = glob.glob(prePath+testPrefix+'*Downlink*')
+    fig, ax = plt.subplots(1, figsize=(16,12))
+
+    numCLIs = {}
+    meanUtils = {}
+    targetQoEs = {}
+    numSlices = {}
+    runIdents = []
+    
+    for ceil in ceils:
+        for q in qs:
+            for filename in filenames:
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    numSli = 1
+                    if 'sli' in runName:
+                        numSli = int(runName.split('sli')[0].split('_')[1])
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    runIdent = 'C'+str(ceil)+'_Q'+str(q)
+                    if runIdent not in runIdents:
+                        numCLIs[runIdent] = []
+                        meanUtils[runIdent] = []
+                        targetQoEs[runIdent] = []
+                        numSlices[runIdent] = []
+                        runIdents.append(runIdent)
+                    numCLIs[runIdent].append(numCliRun)
+                    targetQoEs[runIdent].append(tarQoE)
+                    numSlices[runIdent].append(numSli)
+                    runDF = pd.read_csv(filename)
+                    mosValDF = filterDFType(runDF, 'resAllocLink0').dropna()
+                    meanUtils[runIdent].append(mosValDF['Downlink Throughput resAllocLink0'].sum()/(simTime))
+
+    for runIdent in runIdents:
+        # Get the ceiling multiplier and target QoE
+        ceil = int(runIdent.split('C')[1].split('_Q')[0])
+        tQoE = int(runIdent.split('_Q')[-1])
+        # Determine offset variables for bars
+        qoeOff = qs.index(tQoE) # values would be according to number of target qoe, so for [3.0, 3.5, 4.0] -> values 0 to 2
+        ceilOff = ceils.index(ceil) # values would be according to number of investigated ceils, so for [100, 120, 140] -> values 0 to 2
+
+        cl = ceilColorPalet[ceil] # color according to ceil
+
+        # tempVals = [statistics.mean(x) for x in meanUtils[runIdent]]
+        # arrMeanVals = [[x*100/tempVals[numSlices[runIdent].index(1)]] for x in tempVals]
+
+        #Go over all slicing configs within run
+        for sliceNum in numSlices[runIdent]:
+            sliceOff = numSlis.index(sliceNum) # values would be according to number of investigated slicing configs, so for [1,2,5] -> values 1 to 3
+            st = numSlicesBarStyle[sliceNum] # style according to num slices
+            xPosition = qoeOff * (len(numSlis) * len(ceils) + 1) + sliceOff * len(numSlis) + ceilOff
+            barHeight = meanUtils[runIdent][numSlices[runIdent].index(sliceNum)]*100/meanUtils[runIdent][numSlices[runIdent].index(1)]
+            lbl = str(sliceNum) + ' Slices; Ceil of: ' + str(ceil) + '%; Target QoE:' + str(float(tQoE)/10)
+            print(ceil, tQoE, sliceNum, ';', qoeOff, ceilOff, sliceOff, '=', xPosition, ';', cl, st, ':', barHeight, '\n ---', lbl) # Debug print
+
+            # ax.bar(xPosition, barHeight, color=cl, edgecolor='black', hatch=st, label=lbl)
+            if sliceNum != 1: ax.bar(xPosition, barHeight, color=cl, edgecolor='black', hatch=st)
+
+    for ceil in ceils:
+        if ceil > 900:
+            ax.bar(-10,5,color=ceilColorPalet[ceil], edgecolor='black', label='Ceil QoE of: ' + str(float(ceil-900)/10) + '%')
+        else:    
+            ax.bar(-10,5,color=ceilColorPalet[ceil], edgecolor='black', label='Ceil of: ' + str(ceil) + '%')
+    for sliceNum in numSlis:
+        ax.bar(-10,5,color='white', edgecolor='black', hatch=numSlicesBarStyle[sliceNum], label=str(sliceNum)+' Slices')
+
+    preOutPath = '../exports/plots/relSysUtilBar/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    ax.set_ylim(75,110)
+    ax.set_xlim(-1,(len(numSlis)*len(ceils)+1)*len(qs)-1)
+    ticks = [len(numSlis)*len(ceils)*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
+    ax.vlines([len(numSlis)*len(ceils)*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
+    labels = [float(x)/10 if x <= 50 and x >= 10 else '-' for x in qs]
+
+    plt.xticks(ticks, labels)
+    plt.legend(fontsize=25)
+    plt.xlabel('Target QoE')
+    plt.ylabel("System Utilization Relative to NO Slicing [%]")
+    outPath = preOutPath+'sysUtil'+testPrefix+'_R'+str(linkSpeed)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
 
 
-# linkSpeeds = [100, 200]
-# ceil = [100, 110, 125, 140]
-# qs = [30, 35, 40]
-# for ls in linkSpeeds:
-    # plotMosVsNumCli('liteChtb', ls, ceil)
-    # plotMosVsTarget('liteChtb', ls, ceil)
-    # plot3DMosVsNumUsersCeil('liteChtb', ls, ceil)
-    # plotMosVsCeil('liteChtb', ls, ceil)
-    # for c in ceil:
-    #     plotMosVsNumUsers('liteChtb', ls, c)
-    #     plot3DMosVsNumUsers('liteChtb', ls, c)
-    # plotMosVsSlices('liteChtb', ls, ceil, qs)
-    # plotMosVsSlicesSplit('liteChtb', ls, ceil, qs)
-    # plotUtilVsSlicesSplit('liteChtb', ls, ceil, qs, 400)
-    # plotUtilVsSlices('liteChtb', ls, ceil, qs, 400)
-    # plotAvgTPVsNumCli('liteChtb', ls, ceil, 400)
-
-# plotMosVsSlicesSplit('qoeAdm', 100, [140], [30,35,40], False)
-# plotMosVsSlicesSplit('qoeAdm', 100, [140], [30,35,40], True)
-
-# plotMosVsSlicesSplit('qosAdm', 100, [140], [35], False)
-# plotMosVsSlicesSplit('qosAdm', 100, [140], [35], True)
-
-# plotUtilVsSlicesSplit('qoeAdm', 100, [140], [30,35,40], 400, False)
-# plotUtilVsSlicesSplit('qoeAdm', 100, [140], [30,35,40], 400, True)
-
-# plotUtilVsSlicesSplit('qosAdm', 100, [140], [35], 400, False)
-# plotUtilVsSlicesSplit('qosAdm', 100, [140], [35], 400, True)
-
-# plotMosVsSlicesSplitAppType('qoeAdm', 100, [140], [30,35,40], False, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'])
-
-# plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, 100, 30)
-# plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, 100, 30)
-# plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, 140, 40)
-# plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, 140, 40)
-
-# for q in [30, 35, 40]:
-#     for ceil in [100, 110, 125, 140]:
-#         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
-#         plotSlicesForCeilQsSplit('liteChtb', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-
-# for q in [35]:
-#     for ceil in [200]:
-#         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
-#         # plotSlicesForCeilQsSplit('newHmsQoeAdm', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmissionAuto', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
-#         plotUtilVsSlicesSplit('qoeAdmissionAuto', 100, [ceil], [q], 400, False)
-
-
-# for q in [35]:
-#     for ceil in [200]:
-#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
-#         plotSlicesBoxForCeilQsSplit('qoeAdmission4-3xDel', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
-# #         # plotUtilVsSlicesSplit(testPrefix, linkSpeed, ceils, qs, simTime, prio)
-#         plotUtilVsSlicesSplit('qoeAdmission4-3xDel', 100, [ceil], [q], 400, False)
-# #         plotUtilVsSlicesSplit('newHmsQoeAdm4-3xDelLC', 100, [ceil], [q], 400, False)
-# #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q)
-# #         plotSlicesBoxForCeilQsSplit('newHmsQoeAdm4-3xDelLC', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q)
-        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False)
-        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False)
-        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, True)
-        # plotSlicesBoxForCeilQsSplit('qoeAdmission3-4delBand', ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, True)
-        # plotUtilVsSlicesSplit('qoeAdmission3-4delBand', 100, [ceil], [q], 400, False)
+############################################################################################
 
 # Plot for QoE tests
 testNameQoE = 'expQoeAdmission40ms' # Name prefix of the QoE test
@@ -3072,36 +3183,43 @@ targetQoEs = [30,35,40] # Target QoEs
 chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
 for q in targetQoEs:
     for ceil in chosenCeilsQoE:
-        # plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
-        # plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
-        # plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
-        # plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+        plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
         plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, True) # Plot utilization per app classes
-#         plotCountSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
-# plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
+        plotCountSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
+plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
+plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
+plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
 
 # Plot for QoS tests
 testNameQoS = 'expQosAdmissionNewDL40ms' # Name prefix of the QoS test
 chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
 for q in [60]: # target QoE set to 60, so we still get nice plots and in my other tests the Q60 indicates a QoS test
     for ceil in chosenCeilsQoS:
-#         plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
-#         plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
-#         plotClassSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
-#         plotClassUtilizationForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot utilization per app classes
+        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        plotClassSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+        plotClassUtilizationForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
         plotClassUtilizationForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, True) # Plot utilization per app classes
-#         plotCountSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
-# plotUtilVsSlicesSplit(testNameQoS, 100, chosenCeilsQoS, [60], 400, False) # Plot overall system utilization
+        plotCountSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
+plotUtilVsSlicesSplit(testNameQoS, 100, chosenCeilsQoS, [60], 400, False) # Plot overall system utilization
+plotUtilVsSlicesBar(testNameQoS, 100, chosenCeilsQoS, [60], [1,2,5], 400) # Plot overall system utilization
+plotRelativeUtilVsSlicesBar(testNameQoS, 100, chosenCeilsQoS, [60], [1,2,5], 400) # Plot relative system utilization
+
 
 # Plot for QoE Range tests
-testNameQoE = 'expQoeAdmission40ms' # Name prefix of the QoE test
+testNameQoE = 'expQoeAdmission40msQoErange' # Name prefix of the QoE test
 targetQoEs = [30,35,40] # Target QoEs
 chosenCeilsQoE = [935,940,945] # Chosen ceil rate multipliers for QoE test
 for q,ceil in zip(targetQoEs,chosenCeilsQoE):
-#     plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
-#     plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
-#     plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
-#     plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot utilization per app classes
+    plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+    plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+    plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+    plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
     plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, True) # Plot utilization per app classes
-#     plotCountSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
-# plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
+    plotCountSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
+plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
+plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
+plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
