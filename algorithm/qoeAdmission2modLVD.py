@@ -10,39 +10,24 @@ def getBandForQoECli(host, desQoE):
     qoeEstimator = qoeEst.ClientQoeEstimator(host)
     qoe = np.array([qoeEstimator.estQoEb(x) for x in qoeEstimator.yAxis])
     idx = np.abs(qoe - desQoE).argmin()
-    # for y, q in zip(qoeEstimator.yAxis, qoe):
-    #     print(y, q)
     return qoeEstimator.yAxis[idx]
-
-# getBandForQoECli('hostLVD', 3.0)
-
-qoeClassMultiplier = {3.0 : {'hostVID' : 1.0,
-                            'hostLVD' : 0.6,
-                            'hostFDO' : 1.0,
-                            'hostSSH' : 0.25,
-                            'hostVIP' : 0.75},
-                      3.5 : {'hostVID' : 1.0,
-                            'hostLVD' : 0.4,
-                            'hostFDO' : 1.0,
-                            'hostSSH' : 0.25,
-                            'hostVIP' : 0.75},
-                      4.0 : {'hostVID' : 0.95,
-                            'hostLVD' : 0.4,
-                            'hostFDO' : 0.75,
-                            'hostSSH' : 0.2,
-                            'hostVIP' : 0.75}}
 
 # default: ceilMultiplier = 1.25; guaranteeMultiplier = 1.0
 def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultiplier, guaranteeMultiplier):
     usedBand = 0
     numHostsPerType = {}
     reqBitratesPerType = {}
-    nominalReqBitratesPerType = {}
     for host in cliTypes:
-        nominalReqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)*guaranteeMultiplier
-        print('For a QoE of', desiredQoE, host, 'nominally needs:', nominalReqBitratesPerType[host], end='; ')
-        reqBitratesPerType[host] = nominalReqBitratesPerType[host] * qoeClassMultiplier[desiredQoE][host]
-        print('We limit it to:',reqBitratesPerType[host])
+        if host == 'hostLVD':
+            if desiredQoE == 3.0:
+                reqBitratesPerType[host] = 420.0
+            elif desiredQoE == 3.5:
+                reqBitratesPerType[host] = 660.0
+            elif desiredQoE == 4.0:
+                reqBitratesPerType[host] = 1820.0
+        else:
+            reqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)*guaranteeMultiplier
+        print('For a QoE of', desiredQoE, host, 'needs', reqBitratesPerType[host])
         numHostsPerType[host] = 0
     numSameRes = 0
     oldBand = 0
@@ -66,9 +51,9 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultipli
     ceilBitrates = {}
     for host in cliTypes:
         if host == 'hostFDO':
-            ceilBitrates[host] = nominalReqBitratesPerType[host]
+            ceilBitrates[host] = reqBitratesPerType[host]
         else:
-            ceilBitrates[host] = nominalReqBitratesPerType[host] * ceilMultiplier
+            ceilBitrates[host] = reqBitratesPerType[host] * ceilMultiplier
 
     return numHostsPerType, reqBitratesPerType, ceilBitrates
 
@@ -319,7 +304,7 @@ targetQoE = [3.0,3.5,4.0]
 assuredMulti = [1.0]
 rates = [100]
 maxCliRate = [50]
-ceils = [1.0,1.2,1.4]
+ceils = [1.4]
 dPrio = [False]
 
 
@@ -328,11 +313,11 @@ dPrio = [False]
 # rates = [100, 200]
 # maxCliRate = [50, 100]
 # ceils = [1.0, 1.1, 1.25, 1.4]
-# for rate, maxCli in zip(rates, maxCliRate):
-#     for qoE in targetQoE:
-#         for mult in assuredMulti:
-#             for ceil in ceils:
-#                 for dp in dPrio:
-#                     genAllSliConfigsHTBRun('expQoeAdmission40msLimitBandNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
-#                     genAllSliConfigsHTBRun('expQoeAdmission40msLimitBandNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
-#                     genAllSliConfigsHTBRun('expQoeAdmission40msLimitBandNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+for rate, maxCli in zip(rates, maxCliRate):
+    for qoE in targetQoE:
+        for mult in assuredMulti:
+            for ceil in ceils:
+                for dp in dPrio:
+                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
