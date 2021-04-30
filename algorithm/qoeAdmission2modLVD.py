@@ -20,11 +20,11 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultipli
     for host in cliTypes:
         if host == 'hostLVD':
             if desiredQoE == 3.0:
-                reqBitratesPerType[host] = 420.0
+                reqBitratesPerType[host] = 420.0 * 1.1
             elif desiredQoE == 3.5:
-                reqBitratesPerType[host] = 660.0
+                reqBitratesPerType[host] = 660.0 * 1.1
             elif desiredQoE == 4.0:
-                reqBitratesPerType[host] = 1820.0
+                reqBitratesPerType[host] = 1820.0 * 1.1
         else:
             reqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)*guaranteeMultiplier
         print('For a QoE of', desiredQoE, host, 'needs', reqBitratesPerType[host])
@@ -295,7 +295,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/runCommandsV2.txt', 'a+')
+    f2 = open('../5gNS/simulations/runCommandsModL2iQ.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
@@ -318,6 +318,6 @@ for rate, maxCli in zip(rates, maxCliRate):
         for mult in assuredMulti:
             for ceil in ceils:
                 for dp in dPrio:
-                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('expQoeAdmissionModLVD40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQoeAdmissionModL2iQ40msNo1Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQoeAdmissionModL2iQ40msNo2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('expQoeAdmissionModL2iQ40msNo3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)

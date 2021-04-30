@@ -1872,6 +1872,22 @@ qoeClassMultiplier = {'Q30': {'hostVID' : 1.0,
                              'hostVIP' : 0.75}
                      }
 
+assuredRatesModL = {'Q30' : {'VID' : 530,
+                             'LVD' : 420,
+                             'FDO' : 1660,
+                             'SSH' : 10,
+                             'VIP' : 30},
+                    'Q35' : {'VID' : 1120,
+                             'LVD' : 660,
+                             'FDO' : 2220,
+                             'SSH' : 10,
+                             'VIP' : 30},
+                    'Q40' : {'VID' : 2220,
+                             'LVD' : 1820,
+                             'FDO' : 3000,
+                             'SSH' : 20,
+                             'VIP' : 30}}
+
 def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs):
     prePath = '../exports/extracted/'+dataType+'/'
     filenames = glob.glob(prePath+testPrefix+'*')
@@ -1962,6 +1978,8 @@ def plotSlicesForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil, qs
             exmin = [-0.4 + x for x in arrNumSli]
             exmax = [0.4 + x for x in arrNumSli]
             assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
+            if 'ModL' in testPrefix:
+                assured = assuredRatesModL[runIdent.split('_')[1]][runIdent.split('_')[-1]]
             if 'LimitBand' in testPrefix:
                 print('Limit Band is in effect!', assured * qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]])
                 ax.hlines([assured * qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]] for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='--')
@@ -2120,6 +2138,8 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
             exmin = [-0.4 + x for x in arrNumSli]
             exmax = [0.4 + x for x in arrNumSli]
             assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
+            if 'ModL' in testPrefix:
+                assured = assuredRatesModL[runIdent.split('_')[1]][runIdent.split('_')[-1]]
             if 'LimitBand' in testPrefix:
                 print('LimitBand in effect!', assured * qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]])
                 ax.hlines([assured * qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]] for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='--')
@@ -2128,6 +2148,8 @@ def plotSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, ceil,
             if runIdent.split('_')[-1] != 'FDO':
                 if ceil >= 900:
                     ceils = assuredRates['Q'+str(ceil-900)][runIdent.split('_')[-1]]
+                    if 'ModL' in testPrefix:
+                        ceils = assuredRatesModL['Q'+str(ceil-900)][runIdent.split('_')[-1]]
                     ax.hlines([ceils for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
                 else:
                     ax.hlines([assured*ceil/100 for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
@@ -2313,6 +2335,8 @@ def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, 
             exmin = [-0.4 + x for x in arrNumSli]
             exmax = [0.4 + x for x in arrNumSli]
             assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
+            if 'ModL' in testPrefix:
+                assured = assuredRatesModL[runIdent.split('_')[1]][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
             # if 'LimitBand' in testPrefix:
             #     assured *= qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]]
             if 'LimitBand' in testPrefix:
@@ -2324,6 +2348,8 @@ def plotClassSlicesBoxForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed, 
             if runIdent.split('_')[-1] != 'FDO':
                 if ceil >= 900:
                     ceils = assuredRates['Q'+str(ceil-900)][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
+                    if 'ModL' in testPrefix:
+                        ceils = assuredRates['Q'+str(ceil-900)][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
                     ax.hlines([ceils for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
                 else:
                     ax.hlines([assured*ceil/100 for _ in arrNumSli],xmin=exmin,xmax=exmax, color=color, linestyle='dotted')
@@ -2496,6 +2522,8 @@ def plotClassUtilizationForCeilQsSplit(testPrefix, appTypes, dataType, linkSpeed
         # arrNumSli = [counter + 6*x for x in [x for _,x in sorted(zip(numSlices[runIdent],[0,1,2]))]]
         arrNumSli = [counter + 6*x for x in [0,1,2]]
         sumClassAssuredRates = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
+        if 'ModL' in testPrefix:
+            sumClassAssuredRates = assuredRatesModL[runIdent.split('_')[1]][runIdent.split('_')[-1]]*numCLIsRunIdent[runIdent]
         if 'LimitBand' in testPrefix:
             sumClassAssuredRates *= qoeClassMultiplier[runIdent.split('_')[1]]['host'+runIdent.split('_')[-1]]
         # print(runIdent, sumClassAssuredRates)
@@ -3300,7 +3328,7 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, qs,
                 generalRunIdents.append('C'+str(c)+'_Q'+str(q))
 
     ceilsNum = len(ceils)
-    if 'QoErange' in testPrefix:
+    if 'QoErange' in testPrefix or 'ModL' in testPrefix:
         ceilsNum = 1
 
     labels = ['' for _ in range(len(numSlis) * ceilsNum * len(qs) + len(qs))]
@@ -3334,7 +3362,7 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, qs,
             sliceOff = numSlis.index(sliceNum) # values would be according to number of investigated slicing configs, so for [1,2,5] -> values 1 to 3
             st = numSlicesBarStyle[sliceNum] # style according to num slices
             xPosition = qoeOff * (len(numSlis) * ceilsNum + 1) + sliceOff * len(numSlis) + ceilOff
-            if 'QoErange' in testPrefix:
+            if 'QoErange' in testPrefix or 'ModL' in testPrefix:
                 xPosition = qoeOff * (len(numSlis) * ceilsNum + 1) + sliceOff
             print(qoeOff,sliceOff,ceilOff,xPosition)
             if ceil > 900:
@@ -3358,6 +3386,8 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, qs,
                     if 'LimitBand' in testPrefix:
                         multip = qoeClassMultiplier['Q'+str(tQoE)]['host'+appTypes[i]]
                     barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRates['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+appTypes[i]])))+'%'
+                    if 'ModL' in testPrefix:
+                        barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRatesModL['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+appTypes[i]])))+'%'
                     ax.text(xPosition, (minY + maxY)/2, barLbl, ha='center', va='center', rotation=90, fontsize=20,bbox=dict(boxstyle="round", edgecolor='White', facecolor='white', alpha=0.5, pad=0.1))
 
     for appType in appTypes[::-1]:
@@ -3390,9 +3420,9 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, qs,
 ############################################################################################
 
 # Plot for QoE tests
-testNameQoE = 'expQoeAdmission40msN' # Name prefix of the QoE test
-targetQoEs = [30,35,40] # Target QoEs
-chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
+# testNameQoE = 'expQoeAdmission40msN' # Name prefix of the QoE test
+# targetQoEs = [30,35,40] # Target QoEs
+# chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
 # for q in targetQoEs:
 #     for ceil in chosenCeilsQoE:
 #         plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
@@ -3404,11 +3434,11 @@ chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
 # plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
 # plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
 # plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
-plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
+# plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
 
 # Plot for QoS tests
-testNameQoS = 'expQosAdmissionNewDL40ms' # Name prefix of the QoS test
-chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
+# testNameQoS = 'expQosAdmissionNewDL40ms' # Name prefix of the QoS test
+# chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
 # for q in [60]: # target QoE set to 60, so we still get nice plots and in my other tests the Q60 indicates a QoS test
 #     for ceil in chosenCeilsQoS:
 #         plotSlicesBoxForCeilQsSplit(testNameQoS, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
@@ -3420,13 +3450,13 @@ chosenCeilsQoS = [100,120,140] # Chosen ceil rate multipliers for QoS test
 # plotUtilVsSlicesSplit(testNameQoS, 100, chosenCeilsQoS, [60], 400, False) # Plot overall system utilization
 # plotUtilVsSlicesBar(testNameQoS, 100, chosenCeilsQoS, [60], [1,2,5], 400) # Plot overall system utilization
 # plotRelativeUtilVsSlicesBar(testNameQoS, 100, chosenCeilsQoS, [60], [1,2,5], 400) # Plot relative system utilization
-plotSystemAndClassUtilizationBar(testNameQoS, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoS, [60], [1,2,5], 400)
+# plotSystemAndClassUtilizationBar(testNameQoS, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoS, [60], [1,2,5], 400)
 
 
 # Plot for QoE Range tests
-testNameQoE = 'expQoeAdmission40msQoErange' # Name prefix of the QoE test
-targetQoEs = [30,35,40] # Target QoEs
-chosenCeilsQoE = [935,940,945] # Chosen ceil rate multipliers for QoE test
+# testNameQoE = 'expQoeAdmission40msQoErange' # Name prefix of the QoE test
+# targetQoEs = [30,35,40] # Target QoEs
+# chosenCeilsQoE = [935,940,945] # Chosen ceil rate multipliers for QoE test
 # for q,ceil in zip(targetQoEs,chosenCeilsQoE):
 #     plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
 #     plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
@@ -3437,12 +3467,12 @@ chosenCeilsQoE = [935,940,945] # Chosen ceil rate multipliers for QoE test
 # plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
 # plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
 # plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
-plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
+# plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
 
 # Plot for Limited Assured Rate tests
-testNameQoE = 'expQoeAdmission40msLimitBand' # Name prefix of the QoE test
-targetQoEs = [30,35,40] # Target QoEs
-chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
+# testNameQoE = 'expQoeAdmission40msLimitBand' # Name prefix of the QoE test
+# targetQoEs = [30,35,40] # Target QoEs
+# chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
 # for q in targetQoEs:
 #     for ceil in chosenCeilsQoE:
 #         plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
@@ -3454,5 +3484,22 @@ chosenCeilsQoE = [100,120,140] # Chosen ceil rate multipliers for QoE test
 # plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
 # plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
 # plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
+# plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
+
+# Plot for Changed LVD tests
+testNameQoE = 'expQoeAdmissionModL40ms' # Name prefix of the QoE test
+targetQoEs = [30,35,40] # Target QoEs
+chosenCeilsQoE = [140] # Chosen ceil rate multipliers for QoE test
+for q in targetQoEs:
+    for ceil in chosenCeilsQoE:
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughpus for clients
+        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, q, False) # Plot QoE for clients
+        plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
+        plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
+        plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, True) # Plot utilization per app classes
+        plotCountSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'davr', 'mos2', 100, ceil, q, False)
+plotUtilVsSlicesSplit(testNameQoE, 100, chosenCeilsQoE, targetQoEs, 400, False) # Plot overall system utilization
+plotUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot overall system utilization
+plotRelativeUtilVsSlicesBar(testNameQoE, 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400) # Plot relative system utilization
 plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
 
