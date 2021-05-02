@@ -1873,17 +1873,17 @@ qoeClassMultiplier = {'Q30': {'hostVID' : 1.0,
                      }
 
 assuredRatesModL = {'Q30' : {'VID' : 530,
-                             'LVD' : 420,
+                             'LVD' : 420*1.1,
                              'FDO' : 1660,
                              'SSH' : 10,
                              'VIP' : 30},
                     'Q35' : {'VID' : 1120,
-                             'LVD' : 660,
+                             'LVD' : 660*1.1,
                              'FDO' : 2220,
                              'SSH' : 10,
                              'VIP' : 30},
                     'Q40' : {'VID' : 2220,
-                             'LVD' : 1820,
+                             'LVD' : 1820*1.1,
                              'FDO' : 3000,
                              'SSH' : 20,
                              'VIP' : 30}}
@@ -3487,7 +3487,7 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, qs,
 # plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
 
 # Plot for Changed LVD tests
-testNameQoE = 'expQoeAdmissionModL40ms' # Name prefix of the QoE test
+testNameQoE = 'expQoeAdmissionModL2iQ40ms' # Name prefix of the QoE test
 targetQoEs = [30,35,40] # Target QoEs
 chosenCeilsQoE = [140] # Chosen ceil rate multipliers for QoE test
 for q in targetQoEs:
