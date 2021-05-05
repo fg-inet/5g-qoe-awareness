@@ -25,6 +25,8 @@ def simpleAdmission(availBand, desiredQoE, cliTypes, maxNumCliType, ceilMultipli
                 reqBitratesPerType[host] = 660.0 * 1.1
             elif desiredQoE == 4.0:
                 reqBitratesPerType[host] = 1820.0 * 1.1
+            elif desiredQoE == 4.5:
+                reqBitratesPerType[host] = 4600.0 * 1.1
         else:
             reqBitratesPerType[host] = getBandForQoECli(host, desiredQoE)*guaranteeMultiplier
         print('For a QoE of', desiredQoE, host, 'needs', reqBitratesPerType[host])
