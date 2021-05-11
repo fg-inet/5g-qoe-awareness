@@ -34,3 +34,9 @@
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmissionModL2aW40msNo1Base_R100_Q40_M100_C120_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmissionModL2aW40msNo2_2sli_R100_Q40_M100_C120_PFalse -s 1
 ./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmissionModL2aW40msNo3_5sli_R100_Q40_M100_C120_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo1Base_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo2_2sli_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo3_5sli_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo1Base_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo2_2sli_R100_Q35_M100_C140_PFalse -s 1
+./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c expQoeAdmModL2aW0FD40msNo3_5sli_R100_Q35_M100_C140_PFalse -s 1
