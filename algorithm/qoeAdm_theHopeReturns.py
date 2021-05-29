@@ -225,11 +225,26 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     configString += 'description = \"Configuration for ' + confName + '. All five applications. QoS employed. Guarantee Multiplier: ' + str(guaranteeMultiplier) + '; Ceil multiplier: ' + str(ceilMultiplier) +'\"\n\n'
     configString += 'extends = ' + base + '\n\n'
     configString += '*.configurator.config = xmldoc(\"configs/baseQoS/' + confName + 'Routing.xml\")\n\n'
-    configString += '*.nVID = ' + str(numHostsPerType['hostVID']) + ' # Number of video clients\n'
-    configString += '*.nLVD = ' + str(numHostsPerType['hostLVD']) + ' # Number of live video client\n'
-    configString += '*.nFDO = ' + str(numHostsPerType['hostFDO']) + ' # Number of file download clients\n'
-    configString += '*.nSSH = ' + str(numHostsPerType['hostSSH']) + ' # Number of SSH clients\n'
-    configString += '*.nVIP = ' + str(numHostsPerType['hostVIP']) + ' # Number of VoIP clients\n\n'
+    if 'hostVID' in numHostsPerType:
+        configString += '*.nVID = ' + str(numHostsPerType['hostVID']) + ' # Number of video clients\n'
+    else: 
+        configString += '*.nVID = 0 # Number of video clients\n'
+    if 'hostLVD' in numHostsPerType:
+        configString += '*.nLVD = ' + str(numHostsPerType['hostLVD']) + ' # Number of live video client\n'
+    else: 
+        configString += '*.nLVD = 0 # Number of live video client\n'
+    if 'hostFDO' in numHostsPerType:
+        configString += '*.nFDO = ' + str(numHostsPerType['hostFDO']) + ' # Number of file download clients\n'
+    else: 
+        configString += '*.nFDO = 0 # Number of file download clients\n'
+    if 'hostSSH' in numHostsPerType:
+        configString += '*.nSSH = ' + str(numHostsPerType['hostSSH']) + ' # Number of SSH clients\n'
+    else: 
+        configString += '*.nSSH = 0 # Number of SSH clients\n'
+    if 'hostVIP' in numHostsPerType:
+        configString += '*.nVIP = ' + str(numHostsPerType['hostVIP']) + ' # Number of VoIP clients\n\n'
+    else: 
+        configString += '*.nVIP = 0 # Number of VoIP clients\n\n'
     configString += '*.router*.ppp[0].ppp.queue.typename = \"HTBQueue\"\n'
     configString += '*.router*.ppp[0].ppp.queue.numQueues = ' + str(sumHosts) + '\n'
     configString += '*.router*.ppp[0].ppp.queue.queue[*].typename = \"DropTailQueue\"\n'
@@ -298,16 +313,16 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/runCommandsTheHopeReturnsGBR85.txt', 'a+')
+    f2 = open('../5gNS/simulations/justVoIPoneSlice.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
 
-targetQoE = [3.5]
-assuredMulti = [0.85]
+targetQoE = [3.0, 3.5, 4.0]
+assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8]
 rates = [100]
 maxCliRate = [50]
-ceils = [2.0]
+ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
 dPrio = [False]
 
 for rate, maxCli in zip(rates, maxCliRate):
@@ -316,6 +331,7 @@ for rate, maxCli in zip(rates, maxCliRate):
             for ceil in ceils:
                 for dp in dPrio:
                     # genAllSliConfigsHTBRun('theHopeReturnsNo11Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, 2.0, 1.0, dp)
-                    genAllSliConfigsHTBRun('theHopeReturnsGBR85No12Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('theHopeReturnsGBR85No2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
-                    genAllSliConfigsHTBRun('theHopeReturnsGBR85No3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+                    # genAllSliConfigsHTBRun('theHopeReturnsGBR85No12Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, dp)
+                    # genAllSliConfigsHTBRun('theHopeReturnsGBR85No2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, dp)
+                    # genAllSliConfigsHTBRun('theHopeReturnsGBR85No3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], ['connVID', 'connLVD', 'connFDO', 'connVIP', 'connSSH'], maxCli, ceil, mult, dp)
+                    genAllSliConfigsHTBRun('justVoIPinOneSlice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, ['VIP'], [['VIP']], ['connVIP'], maxCli, ceil, mult, dp)

@@ -3421,9 +3421,9 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, gbr
                         multip *= gbr/100
                     if 'LimitBand' in testPrefix:
                         multip = qoeClassMultiplier['Q'+str(tQoE)]['host'+appTypes[i]]
-                    barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRates['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+sliceNum+'_'+appTypes[i]])))+'%'
-                    if 'ModL' in testPrefix:
-                        barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRatesModL['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+appTypes[i]])))+'%'
+                    barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRatesModL['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+sliceNum+'_'+appTypes[i]])))+'%'
+                    # if 'ModL' in testPrefix:
+                    #     barLbl = str(int(barHeights[sliceNum][appTypes[i]]*100000/(assuredRatesModL['Q'+str(tQoE)][appTypes[i]]*multip*numCLIsRunIdent['C'+str(ceil)+'_Q'+str(tQoE)+'_'+appTypes[i]])))+'%'
                     ax.text(xPosition, (minY + maxY)/2, barLbl, ha='center', va='center', rotation=90, fontsize=20,bbox=dict(boxstyle="round", edgecolor='White', facecolor='white', alpha=0.5, pad=0.1))
 
     for appType in appTypes[::-1]:
@@ -3449,7 +3449,7 @@ def plotSystemAndClassUtilizationBar(testPrefix, appTypes, linkSpeed, ceils, gbr
     else:
         plt.xlabel('Ceiling Rate Multiplier [%]')
     plt.ylabel("Overall System Utilization [%]")
-    outPath = preOutPath+'sysUtil'+testPrefix+'_R'+str(linkSpeed)+'.png'
+    outPath = preOutPath+'sysUtil'+testPrefix+'_R'+str(linkSpeed)+'_Q'+str(qs)+'.png'
     fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
     plt.close('all')
 
@@ -3833,7 +3833,7 @@ def plotSubsetTQoESystemAndClassMOS(testPrefix, appTypes, linkSpeed, ceils, q, n
     preOutPath = '../exports/plots/systemtQoEMosV2/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
-    ax.set_ylim(2.0,4.5)
+    ax.set_ylim(1.0,4.5)
     ax.set_xlim(-1,(len(numSlis)*ceilsNum+1)-1)
     # ax.vlines([len(numSlis)*ceilsNum*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
     tickTqoe = [(len(numSlis)*ceilsNum - 1)/2]
@@ -3845,7 +3845,7 @@ def plotSubsetTQoESystemAndClassMOS(testPrefix, appTypes, linkSpeed, ceils, q, n
     for t,l in zip(tickTqoe, labelTqoe):
         ax.text(t, 4.5, l, horizontalalignment='center', verticalalignment='bottom')
         # ax.hline()
-    plt.legend(fontsize='x-small', ncol=3)#, bbox_to_anchor=(1, 1), loc='upper left')
+    plt.legend(fontsize='x-small', ncol=3, loc='lower center')#, bbox_to_anchor=(1, 1), loc='upper left')
     plt.grid(axis='y')
     if len(ceils) == 1:
         plt.xticks(ticks, labels, rotation=0)
@@ -4567,12 +4567,14 @@ def plotSystemQoEFairness(testPrefix, appTypes, linkSpeed, ceils, qs, numSlis, s
 # plotSystemQoEFairness(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, [1,2,5], 400)
 
 # testNameQoE = 'theHopeReturnsNo' # Name prefix of the QoE test
-testNamesQoE = ['theHopeReturnsNo', 'theHopeReturnsGBR85No'] # Name prefix of the QoE test
-targetQoEs = [35] # Target QoEs
+# testNamesQoE = ['theHopeReturnsNo', 'theHopeReturnsGBR85No'] # Name prefix of the QoE test
+testNamesQoE = ['aNewHopeV1GBR85', 'aNewHopeV1GBR100'] # Name prefix of the QoE test
+targetQoEs = [30,35,40] # Target QoEs
 chosenCeilsQoE = [200] # Chosen ceil rate multipliers for QoE test
-gbrs = [70,85]
+gbrs = [85,100]
 # sliNames = ['1Base','2Base','2sli','5sli']
-sliNamess = [['1Base','2Base','2sli','5sli'], ['1Base','2Base','2sli','5sli']]
+# sliNamess = [['1Base','2Base','2sli','5sli'], ['1Base','2Base','2sli','5sli']]
+sliNamess = [['2Base','2sli','5sli'], ['2Base','2sli','5sli']]
 for testNameQoE, gbr, sliNames in zip(testNamesQoE, gbrs, sliNamess):
     for q in targetQoEs:
         for sli in sliNames:
@@ -4581,6 +4583,8 @@ for testNameQoE, gbr, sliNames in zip(testNamesQoE, gbrs, sliNamess):
             plotSubsetTQoESystemAndClassMOS(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, [ceil], q, sliNames)
             plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, gbr, q, False, sliNames) # Plot throughpus for clients
             plotSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'mos2', 100, ceil, gbr, q, False, sliNames) # Plot QoE for clients
+        plotSystemAndClassUtilizationBar(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, gbr, [q], sliNames)
+
     #         plotClassSlicesBoxForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False) # Plot throughputs for app classes
     #         plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, False) # Plot utilization per app classes
     #         plotClassUtilizationForCeilQsSplit(testNameQoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], 'throughputs', 100, ceil, q, False, True) # Plot utilization per app classes
