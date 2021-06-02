@@ -4503,7 +4503,7 @@ def plotDetailedClassTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numS
                             numSlices[runIdent] = []
                             runIdents.append(runIdent)
 
-                        numCLIs[runIdent].append(numCliRun)
+                        numCLIs[runIdent] = numCliRun
                         numSlices[runIdent].append(runAdd)
                         runDF = pd.read_csv(filename)
                         valDF = filterDFType(filterDFType(runDF, filterName), appType)
@@ -4513,7 +4513,7 @@ def plotDetailedClassTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numS
                         li, hi = stats.t.interval(0.95, len(meanCliValues)-1, loc=np.mean(meanCliValues), scale=stats.sem(meanCliValues))
                         print('\tMean run throughput', appType, ':', statistics.mean(meanCliValues),'; LowCI:',li,'; HiCI:',hi)
                         meanClassVals[runIdent].extend(meanCliValues)
-                        print(meanClassVals[runIdent])
+                        # print(meanClassVals[runIdent])
 
 
     generalRunIdents = []
@@ -4561,23 +4561,21 @@ def plotDetailedClassTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numS
                     exmax = 0.4 + xPosition
                     assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
                     print(runIdent.split('_')[1], runIdent.split('_')[-1], assured)
-                    ax.hlines(assured*50*gbr/100,xmin=exmin,xmax=exmax, color=cl, linestyle='--')
-                    # ax.hlines(assured*50*ceil*gbr/10000,xmin=exmin,xmax=exmax, color=cl, linestyle='dotted')
+                    ax.hlines(assured*numCLIs[runIdent]*gbr/100,xmin=exmin,xmax=exmax, color=cl, linestyle='--')
                     labels[xPosition] = str(ceil) + '%'
-                    # print(ceil, tQoE, sliceNum, appName, ':', barHeights[sliceNum][appName], '\n ---', lbl) # Debug print
 
     preOutPath = '../exports/plots/detailClassTP/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
-    ax.set_ylim(0,1600)
+    ax.set_ylim(1000,3100)
     ax.set_xlim(-1,(len(numSlis)*ceilsNum+1)*len(qs)-1)
     ax.vlines([len(numSlis)*ceilsNum*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
     tickTqoe = [len(numSlis)*ceilsNum*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
     labelTqoe = ['Target QoE ' + str(float(x)/10) if x <= 50 and x >= 10 else '' for x in qs]
     for t,l in zip(tickTqoe, labelTqoe):
-        ax.text(t, 1600, l, horizontalalignment='center', verticalalignment='bottom')
+        ax.text(t, 3100, l, horizontalalignment='center', verticalalignment='bottom')
     plt.xticks(ticks, labels, rotation=90)
-    plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+    # plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
     plt.grid(axis='y')
     if 'QoErange' in testPrefix:
         plt.xlabel('Ceiling QoE')
@@ -4658,14 +4656,8 @@ def plotDetailedAppTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numSli
                         numSlices[runIdent].append(runAdd)
                         runDF = pd.read_csv(filename)
                         valDF = filterDFType(filterDFType(runDF, filterName), appType)
-                        meanCliValues = [0 for _ in range(maxSimTime)]
                         for col in valDF:
-                            meanCliValues = [sum(x) for x in zip(valDF[col].dropna().tolist(), meanCliValues)]
-                        li, hi = stats.t.interval(0.95, len(meanCliValues)-1, loc=np.mean(meanCliValues), scale=stats.sem(meanCliValues))
-                        print('\tMean run throughput', appType, ':', statistics.mean(meanCliValues),'; LowCI:',li,'; HiCI:',hi)
-                        meanClassVals[runIdent].extend(valDF[col].dropna().tolist())
-                        # print(meanClassVals[runIdent])
-
+                            meanClassVals[runIdent].extend(valDF[col].dropna().tolist())
 
     generalRunIdents = []
     if 'QoErange' in testPrefix:
@@ -4719,21 +4711,315 @@ def plotDetailedAppTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numSli
     preOutPath = '../exports/plots/detailClassTP/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
-    ax.set_ylim(0,50)
+    ax.set_ylim(0,60)
     ax.set_xlim(-1,(len(numSlis)*ceilsNum+1)*len(qs)-1)
     ax.vlines([len(numSlis)*ceilsNum*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
     tickTqoe = [len(numSlis)*ceilsNum*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
     labelTqoe = ['Target QoE ' + str(float(x)/10) if x <= 50 and x >= 10 else '' for x in qs]
     for t,l in zip(tickTqoe, labelTqoe):
-        ax.text(t, 50, l, horizontalalignment='center', verticalalignment='bottom')
+        ax.text(t, 60, l, horizontalalignment='center', verticalalignment='bottom')
     plt.xticks(ticks, labels, rotation=90)
-    plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+    # plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
     plt.grid(axis='y')
     if 'QoErange' in testPrefix:
         plt.xlabel('Ceiling QoE')
     else:
         plt.xlabel('Ceiling Rate Multiplier [%]')
     plt.ylabel("VoIP client throuthput [kbps]")
+    outPath = preOutPath+'sysUtilClient'+testPrefix+'_R'+str(linkSpeed)+'_M'+str(gbr)+'_Q'+str(qs)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotDetailedAppDelayBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numSlis):
+    print('-------------', testPrefix, '-------------')
+    prePath = '../exports/extracted/e2ed/'
+    filenames = glob.glob(prePath+testPrefix+'*')
+    fig, ax = plt.subplots(1, figsize=(16,12))
+    filterName = 'Val'
+    
+    numCLIs = {}
+    targetQoEs = {}
+    numSlices = {}
+    runIdents = []
+    meanClassVals = {}
+    meanValsCI = {}
+    numCLIsRunIdent = {}
+    
+    for ceil in ceils:
+        for q in qs:
+            for filename in filenames:
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename and '_M'+str(gbr) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    runAdd = runName.split('_')[0].split('No')[-1]
+                    if 'sli' in runName:
+                        runAdd = runName.split('_')[1]
+                    else:
+                        runAdd = runAdd[1:]
+                    if 'none' in numSlis:
+                        runAdd = 'none'
+                    elif runAdd not in numSlis:
+                        continue
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    for appType in appTypes:
+                        runIdent = 'C'+str(ceil)+'_Q'+str(q)+'_'+runAdd+'_'+appType
+                        temp = filename
+                        if appType == 'VID':
+                            temp = temp.split('VID')[1]
+                            numVID = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numVID
+                        elif appType == 'LVD':
+                            temp = temp.split('LVD')[1]
+                            numLVD = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numLVD
+                        elif appType == 'FDO':
+                            temp = temp.split('FDO')[1]
+                            numFDO = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numFDO
+                        elif appType == 'SSH':
+                            temp = temp.split('SSH')[1]
+                            numSSH = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numSSH
+                        elif appType == 'VIP':
+                            temp = temp.split('VIP')[1]
+                            numVIP = int(temp.split('.')[0])
+                            numCLIsRunIdent[runIdent] = numVIP
+                        
+                        if runIdent not in runIdents:
+                            numCLIs[runIdent] = []
+                            meanClassVals[runIdent] = []
+                            meanValsCI[runIdent] = []
+                            # meanValsCIhi[runIdent] = []
+                            numSlices[runIdent] = []
+                            runIdents.append(runIdent)
+
+                        numCLIs[runIdent].append(numCliRun)
+                        numSlices[runIdent].append(runAdd)
+                        runDF = pd.read_csv(filename)
+                        valDF = filterDFType(filterDFType(runDF, filterName), appType)
+                        for col in valDF:
+                            meanClassVals[runIdent].extend([x*1000 for x in valDF[col].dropna().tolist()])
+
+    generalRunIdents = []
+    if 'QoErange' in testPrefix:
+        print('Bla')
+        for q,c in zip(qs, ceils):
+            generalRunIdents.append('C'+str(c)+'_Q'+str(q))
+    else:
+        for q in qs:
+            for c in ceils:
+                generalRunIdents.append('C'+str(c)+'_Q'+str(q))
+
+    ceilsNum = len(ceils)
+    if 'QoErange' in testPrefix:# or 'ModL' in testPrefix:
+        ceilsNum = 1
+
+    labels = ['' for _ in range(len(numSlis) * ceilsNum * len(qs) + len(qs))]
+    ticks = [x for x in range(len(labels))]
+    maxVal = 0
+    for genRunIdent in generalRunIdents:
+        # Get the ceiling multiplier and target QoE
+        ceil = int(genRunIdent.split('C')[1].split('_Q')[0])
+        tQoE = int(genRunIdent.split('_Q')[-1].split('_')[0])
+        # Determine offset variables for bars
+        qoeOff = qs.index(tQoE) # values would be according to number of target qoe, so for [3.0, 3.5, 4.0] -> values 0 to 2
+        ceilOff = ceils.index(ceil) # values would be according to number of investigated ceils, so for [100, 120, 140] -> values 0 to 2
+
+        for runIdent in runIdents:
+            if genRunIdent in runIdent:
+                print(genRunIdent, runIdent)
+                appName = runIdent.split('_')[-1]
+                #Go over all slicing configs within run
+                for sliceNum in numSlices[runIdent]:
+                    sliceOff = numSlis.index(sliceNum) # values would be according to number of investigated slicing configs, so for [1,2,5] -> values 1 to 3
+                    # st = numSlicesBarStyle[sliceNum] # style according to num slices
+                    cl = colorMapping[appName]
+                    xPosition = qoeOff * (len(numSlis) * ceilsNum + 1) + sliceOff * ceilsNum + ceilOff
+                    # print(statistics.mean(meanClassVals[runIdent]))
+                    ax.boxplot(meanClassVals[runIdent], positions=[xPosition], notch=False, patch_artist=False,
+                        boxprops=dict(color=cl),
+                        capprops=dict(color=cl),
+                        whiskerprops=dict(color=cl),
+                        flierprops=dict(color=cl, markeredgecolor=cl))
+                    mean = statistics.mean(meanClassVals[runIdent])
+                    stddev = statistics.stdev(meanClassVals[runIdent])
+                    ax.errorbar([xPosition], [mean], yerr=([mean-stddev], [mean+stddev]), fmt='o', color='black', zorder=10000)
+                    # exmin = -0.4 + xPosition
+                    # exmax = 0.4 + xPosition
+                    # assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
+                    # print(runIdent.split('_')[1], runIdent.split('_')[-1], assured)
+                    # ax.hlines(assured*gbr/100,xmin=exmin,xmax=exmax, color=cl, linestyle='--')
+                    # ax.hlines(assured*ceil/100,xmin=exmin,xmax=exmax, color=cl, linestyle='dotted')
+                    labels[xPosition] = str(ceil) + '%'
+                    # print(ceil, tQoE, sliceNum, appName, ':', barHeights[sliceNum][appName], '\n ---', lbl) # Debug print
+        
+    preOutPath = '../exports/plots/voipDelay/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    ax.set_ylim(50,150)
+    ax.set_xlim(-1,(len(numSlis)*ceilsNum+1)*len(qs)-1)
+    ax.vlines([len(numSlis)*ceilsNum*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
+    tickTqoe = [len(numSlis)*ceilsNum*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
+    labelTqoe = ['Target QoE ' + str(float(x)/10) if x <= 50 and x >= 10 else '' for x in qs]
+    for t,l in zip(tickTqoe, labelTqoe):
+        ax.text(t, 150, l, horizontalalignment='center', verticalalignment='bottom')
+    plt.xticks(ticks, labels, rotation=90)
+    # plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+    plt.grid(axis='y')
+    if 'QoErange' in testPrefix:
+        plt.xlabel('Ceiling QoE')
+    else:
+        plt.xlabel('Ceiling Rate Multiplier [%]')
+    plt.ylabel("VoIP End-To-End Delay [ms]")
+    outPath = preOutPath+'sysUtilClient'+testPrefix+'_R'+str(linkSpeed)+'_M'+str(gbr)+'_Q'+str(qs)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    plt.close('all')
+
+def plotDetailedAppMOSBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numSlis):
+    print('-------------', testPrefix, '-------------')
+    prePath = '../exports/extracted/mos2/'
+    filenames = glob.glob(prePath+testPrefix+'*')
+    fig, ax = plt.subplots(1, figsize=(16,12))
+    filterName = 'Val'
+    
+    numCLIs = {}
+    targetQoEs = {}
+    numSlices = {}
+    runIdents = []
+    meanClassVals = {}
+    meanValsCI = {}
+    numCLIsRunIdent = {}
+    
+    for ceil in ceils:
+        for q in qs:
+            for filename in filenames:
+                if '_R'+str(linkSpeed) in filename and '_Q'+str(q) in filename and '_C'+str(ceil) in filename and '_M'+str(gbr) in filename:
+                    runName = filename.split('/')[-1].split('.')[0]
+                    print('Run:', runName)
+                    runAdd = runName.split('_')[0].split('No')[-1]
+                    if 'sli' in runName:
+                        runAdd = runName.split('_')[1]
+                    else:
+                        runAdd = runAdd[1:]
+                    if 'none' in numSlis:
+                        runAdd = 'none'
+                    elif runAdd not in numSlis:
+                        continue
+                    tarQoE = float(filename.split('_Q')[1].split('_')[0])/10
+                    print('\tTarget QoE:', tarQoE)
+                    numCliRun = int(filename.split('_VID')[0].split('_')[-1])
+                    print('\tNumber of clients:', numCliRun)
+                    for appType in appTypes:
+                        runIdent = 'C'+str(ceil)+'_Q'+str(q)+'_'+runAdd+'_'+appType
+                        temp = filename
+                        print(temp)
+                        if appType == 'VID':
+                            temp = temp.split('VID')[1]
+                            numVID = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numVID
+                        elif appType == 'LVD':
+                            temp = temp.split('LVD')[1]
+                            numLVD = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numLVD
+                        elif appType == 'FDO':
+                            temp = temp.split('FDO')[1]
+                            numFDO = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numFDO
+                        elif appType == 'SSH':
+                            temp = temp.split('SSH')[1]
+                            numSSH = int(temp.split('_')[0])
+                            numCLIsRunIdent[runIdent] = numSSH
+                        elif appType == 'VIP':
+                            temp = temp.split('VIP')[1]
+                            numVIP = int(temp.split('.')[0])
+                            numCLIsRunIdent[runIdent] = numVIP
+                        
+                        if runIdent not in runIdents:
+                            numCLIs[runIdent] = []
+                            meanClassVals[runIdent] = []
+                            meanValsCI[runIdent] = []
+                            # meanValsCIhi[runIdent] = []
+                            numSlices[runIdent] = []
+                            runIdents.append(runIdent)
+
+                        numCLIs[runIdent].append(numCliRun)
+                        numSlices[runIdent].append(runAdd)
+                        runDF = pd.read_csv(filename)
+                        valDF = filterDFType(filterDFType(runDF, filterName), appType)
+                        for col in valDF:
+                            meanClassVals[runIdent].append(statistics.mean(valDF[col].dropna().tolist()))
+
+
+    generalRunIdents = []
+    if 'QoErange' in testPrefix:
+        print('Bla')
+        for q,c in zip(qs, ceils):
+            generalRunIdents.append('C'+str(c)+'_Q'+str(q))
+    else:
+        for q in qs:
+            for c in ceils:
+                generalRunIdents.append('C'+str(c)+'_Q'+str(q))
+
+    ceilsNum = len(ceils)
+    if 'QoErange' in testPrefix:# or 'ModL' in testPrefix:
+        ceilsNum = 1
+
+    labels = ['' for _ in range(len(numSlis) * ceilsNum * len(qs) + len(qs))]
+    ticks = [x for x in range(len(labels))]
+    for genRunIdent in generalRunIdents:
+        # Get the ceiling multiplier and target QoE
+        ceil = int(genRunIdent.split('C')[1].split('_Q')[0])
+        tQoE = int(genRunIdent.split('_Q')[-1].split('_')[0])
+        # Determine offset variables for bars
+        qoeOff = qs.index(tQoE) # values would be according to number of target qoe, so for [3.0, 3.5, 4.0] -> values 0 to 2
+        ceilOff = ceils.index(ceil) # values would be according to number of investigated ceils, so for [100, 120, 140] -> values 0 to 2
+
+        for runIdent in runIdents:
+            if genRunIdent in runIdent:
+                print(genRunIdent, runIdent)
+                appName = runIdent.split('_')[-1]
+                #Go over all slicing configs within run
+                for sliceNum in numSlices[runIdent]:
+                    sliceOff = numSlis.index(sliceNum) # values would be according to number of investigated slicing configs, so for [1,2,5] -> values 1 to 3
+                    # st = numSlicesBarStyle[sliceNum] # style according to num slices
+                    cl = colorMapping[appName]
+                    xPosition = qoeOff * (len(numSlis) * ceilsNum + 1) + sliceOff * ceilsNum + ceilOff
+                    print(statistics.mean(meanClassVals[runIdent]))
+                    ax.boxplot(meanClassVals[runIdent], positions=[xPosition], notch=False, patch_artist=False,
+                        boxprops=dict(color=cl),
+                        capprops=dict(color=cl),
+                        whiskerprops=dict(color=cl),
+                        flierprops=dict(color=cl, markeredgecolor=cl))
+                    exmin = -0.4 + xPosition
+                    exmax = 0.4 + xPosition
+                    assured = assuredRates[runIdent.split('_')[1]][runIdent.split('_')[-1]]
+                    print(runIdent.split('_')[1], runIdent.split('_')[-1], assured)
+                    ax.hlines(assured*gbr/100,xmin=exmin,xmax=exmax, color=cl, linestyle='--')
+                    ax.hlines(assured*ceil/100,xmin=exmin,xmax=exmax, color=cl, linestyle='dotted')
+                    labels[xPosition] = str(ceil) + '%'
+                    # print(ceil, tQoE, sliceNum, appName, ':', barHeights[sliceNum][appName], '\n ---', lbl) # Debug print
+        
+    preOutPath = '../exports/plots/detailClassMOS/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    ax.set_ylim(4.2,4.4)
+    ax.set_xlim(-1,(len(numSlis)*ceilsNum+1)*len(qs)-1)
+    ax.vlines([len(numSlis)*ceilsNum*x+x-1 for x in range(1,len(qs))], ymin=0, ymax=5000, color='black')
+    tickTqoe = [len(numSlis)*ceilsNum*((2*x+1)/2)+ x - 0.5 for x in range(len(qs))]
+    labelTqoe = ['Target QoE ' + str(float(x)/10) if x <= 50 and x >= 10 else '' for x in qs]
+    for t,l in zip(tickTqoe, labelTqoe):
+        ax.text(t, 4.4, l, horizontalalignment='center', verticalalignment='bottom')
+    plt.xticks(ticks, labels, rotation=90)
+    # plt.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+    plt.grid(axis='y')
+    if 'QoErange' in testPrefix:
+        plt.xlabel('Ceiling QoE')
+    else:
+        plt.xlabel('Ceiling Rate Multiplier [%]')
+    plt.ylabel("VoIP client MOS")
     outPath = preOutPath+'sysUtilClient'+testPrefix+'_R'+str(linkSpeed)+'_M'+str(gbr)+'_Q'+str(qs)+'.png'
     fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
     plt.close('all')
@@ -4911,10 +5197,11 @@ def plotDetailedAppTpBox(testPrefix, appTypes, linkSpeed, ceils, gbr, qs, numSli
 #     plotClassQoEFairness(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, sliNames, 400)
 #     plotSystemQoEFairness(testNameQoE, ['SSH', 'VIP', 'FDO', 'LVD', 'VID'], 100, chosenCeilsQoE, targetQoEs, sliNames, 400)
 
-testNamesQoE = ['justVoIPinOneSlice'] # Name prefix of the QoE test
-targetQoEs = [30,35,40] # Target QoEs
+testNamesQoE = ['justVoIPinOneSliceTommysVersion'] # Name prefix of the QoE test
+targetQoEs = [40] # Target QoEs
 chosenCeilsQoE = [100,125,150,175,200] # Chosen ceil rate multipliers for QoE test
-gbrs = [80,85,90,95,100]
+# gbrs = [70,75,80,85,90,95,100]
+gbrs = [75,80,85,90,95,100]
 sliNamess = [['none']]
 # clients = ['SSH', 'VIP', 'FDO', 'LVD', 'VID']
 clients = ['VIP']
@@ -4925,11 +5212,13 @@ for testNameQoE, sliNames in zip(testNamesQoE, sliNamess):
         #         plotSubsetTQoESystemAndClassMOS(testNameQoE, clients, 100, chosenCeilsQoE, gbr, q, [sli])
         #     for ceil in chosenCeilsQoE:
         #         plotSubsetTQoESystemAndClassMOS(testNameQoE, clients, 100, [ceil], gbr, q, sliNames)
-                # plotSlicesBoxForCeilQsSplit(testNameQoE, ['VIP'], 'throughputs', 100, ceil, gbr, q, False, sliNames) # Plot throughpus for clients
+        #        plotSlicesBoxForCeilQsSplit(testNameQoE, ['VIP'], 'throughputs', 100, ceil, gbr, q, False, sliNames) # Plot throughpus for clients
         #         plotSlicesBoxForCeilQsSplit(testNameQoE, ['VIP'], 'mos2', 100, ceil, gbr, q, False, sliNames) # Plot QoE for clients
         #     plotSystemAndClassUtilizationBar(testNameQoE, clients, 100, chosenCeilsQoE, gbr, [q], sliNames)
         # plotSystemAndClassUtilizationBar(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
-        plotDetailedClassTpBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
-        plotDetailedAppTpBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
+        # plotDetailedClassTpBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
+        # plotDetailedAppTpBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
+        plotDetailedAppMOSBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
+        # plotDetailedAppDelayBox(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
         # plotClassQoEFairness(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)
         # plotSystemQoEFairness(testNameQoE, clients, 100, chosenCeilsQoE, gbr, targetQoEs, sliNames)

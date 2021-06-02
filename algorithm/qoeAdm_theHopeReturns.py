@@ -313,16 +313,18 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/justVoIPinOneSliceTommysVersion.txt', 'a+')
+    f2 = open('../5gNS/simulations/justVoIPinOneSliceTommysVersion_pt2.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
 
-targetQoE = [3.0, 3.5, 4.0]
+# targetQoE = [3.0, 3.5, 4.0]
+targetQoE = [3.0]
 assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7]
 rates = [100]
 maxCliRate = [100,105,111,117,125,133,142]
-ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+ceils = [2.25, 2.5, 2.75, 3.0]
 dPrio = [False]
 
 for rate in rates:
