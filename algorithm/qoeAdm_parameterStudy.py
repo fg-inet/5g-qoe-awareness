@@ -325,11 +325,24 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/parameterStudyVoIP.txt', 'a+')
+    f2 = open('../5gNS/simulations/parameterStudySSH.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i parameterStudyConfiguration.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
+# # Settings for parameter study for the VoIP client
+# targetQoE = [3.5]
+# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+# rates = [100]
+# defaultNumClients = 100
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# # ceils = [1.0, 1.5, 2.0]
+# dPrio = [False]
+# client = 'VIP'
+# studyName = 'parameterStudyVoIP'
 
+
+# Settings for parameter study for the SSH client
 targetQoE = [3.5]
 assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
 # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
@@ -338,7 +351,9 @@ defaultNumClients = 100
 ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
 # ceils = [1.0, 1.5, 2.0]
 dPrio = [False]
-client = 'VIP'
+client = 'SSH'
+studyName = 'parameterStudySSH'
+
 
 counter = 0
 for rate in rates:
@@ -351,6 +366,6 @@ for rate in rates:
                 for ceil in ceils:
                     for dp in dPrio:
                         # print(maxCli, mult)
-                        genAllSliConfigsHTBRun('parameterStudyVoIP'+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
+                        genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
                         counter += 1
 print(counter)
