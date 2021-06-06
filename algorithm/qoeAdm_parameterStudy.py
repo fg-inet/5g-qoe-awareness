@@ -329,6 +329,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     f2.write('./runAndExportSimConfig.sh -i parameterStudyConfiguration.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
+####################################################################
 # # Settings for parameter study for the VoIP client
 # targetQoE = [3.5]
 # assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
@@ -341,7 +342,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # client = 'VIP'
 # studyName = 'parameterStudyVoIP'
 
-
+####################################################################
 # # Settings for parameter study for the SSH client
 # targetQoE = [3.5]
 # assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
@@ -354,6 +355,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # client = 'SSH'
 # studyName = 'parameterStudySSH'
 
+####################################################################
 # # Settings for parameter study for the VoD client
 # targetQoE = [3.5]
 # assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
@@ -366,6 +368,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # client = 'VID'
 # studyName = 'parameterStudyVoD'
 
+####################################################################
 # # Settings for parameter study for the Live client
 # targetQoE = [3.5]
 # assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
@@ -378,17 +381,18 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # client = 'LVD'
 # studyName = 'parameterStudyLive'
 
-# Settings for parameter study for the File Download client
-targetQoE = [3.5]
-assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
-# assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
-rates = [100]
-defaultNumClients = 100
-ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
-# ceils = [1.0, 1.5, 2.0]
-dPrio = [False]
-client = 'FDO'
-studyName = 'parameterStudyFileDownload'
+####################################################################
+# # Settings for parameter study for the File Download client
+# targetQoE = [3.5]
+# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+# rates = [100]
+# defaultNumClients = 100
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# # ceils = [1.0, 1.5, 2.0]
+# dPrio = [False]
+# client = 'FDO'
+# studyName = 'parameterStudyFileDownload'
 
 counter = 0
 for rate in rates:
