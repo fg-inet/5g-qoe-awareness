@@ -325,7 +325,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/parameterStudySSH.txt', 'a+')
+    f2 = open('../5gNS/simulations/parameterStudyDownload.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i parameterStudyConfiguration.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
@@ -342,7 +342,43 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # studyName = 'parameterStudyVoIP'
 
 
-# Settings for parameter study for the SSH client
+# # Settings for parameter study for the SSH client
+# targetQoE = [3.5]
+# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+# rates = [100]
+# defaultNumClients = 100
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# # ceils = [1.0, 1.5, 2.0]
+# dPrio = [False]
+# client = 'SSH'
+# studyName = 'parameterStudySSH'
+
+# # Settings for parameter study for the VoD client
+# targetQoE = [3.5]
+# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+# rates = [100]
+# defaultNumClients = 100
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# # ceils = [1.0, 1.5, 2.0]
+# dPrio = [False]
+# client = 'VID'
+# studyName = 'parameterStudyVoD'
+
+# # Settings for parameter study for the Live client
+# targetQoE = [3.5]
+# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+# rates = [100]
+# defaultNumClients = 100
+# ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+# # ceils = [1.0, 1.5, 2.0]
+# dPrio = [False]
+# client = 'LVD'
+# studyName = 'parameterStudyLive'
+
+# Settings for parameter study for the File Download client
 targetQoE = [3.5]
 assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
 # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
@@ -351,9 +387,8 @@ defaultNumClients = 100
 ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
 # ceils = [1.0, 1.5, 2.0]
 dPrio = [False]
-client = 'SSH'
-studyName = 'parameterStudySSH'
-
+client = 'FDO'
+studyName = 'parameterStudyFileDownload'
 
 counter = 0
 for rate in rates:
