@@ -66,7 +66,7 @@ cd ../..
 python3 remakeMOSexports.py ${config} ${name} # Remake the mos results to include recalculated values
 # python3 parseResInvestigation.py ${config} ${slices} ${name}
 
-rm -rf ../5gNS/simulations/results/${config}
+rm -rf ../../5gNS/simulations/results/${config}/
 
 ###### Plot basic plots ######
 # python3 plotResNE.py ${config} ${slices} ${name} # Plot everything
