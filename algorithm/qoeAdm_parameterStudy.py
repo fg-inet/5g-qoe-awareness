@@ -353,7 +353,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # # ceils = [1.0, 1.5, 2.0]
 # dPrio = [False]
 # client = 'SSH'
-# studyName = 'parameterStudySSH'
+# studyName = 'parameterStudySecureShell'
 
 ####################################################################
 # # Settings for parameter study for the VoD client
