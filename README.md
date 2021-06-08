@@ -5,11 +5,12 @@ Git repository which includes:
 2. Additional files for the INET framework that include all applications used in the simulation
 3. Scripts for export and evaluation of simulated data - without any documentation
 4. Scripts for the optimization algorithm which include some inline documentation
+5. Configurations for Experiments run for the "Analyzing the Potential of Slicing-like Traffic Isolation for QoE-aware Network Control" paper.
 
 Requirements for Omnet++ simulation:
 1. Omnet++ version 5.5.1 - download here: https://omnetpp.org/download/old
 2. INET framework version 4.2.0 - download here: https://inet.omnetpp.org/Download.html
-3. Python 3.6.9 - Tested with this version
+3. Python 3.6.9 - Tested with this version. Probably fine with other versions as well
 
 Installation steps (list may be incomplete):
 1. Download and Compile Omnet++ - follow the guide https://doc.omnetpp.org/omnetpp/InstallGuide.pdf
@@ -23,4 +24,4 @@ Installation steps (list may be incomplete):
  
 To run the simulation from IDE open an INI file from 5gNS folder (baselineTest.ini should be a safe first bet) in Omnet++ IDE and click the green run button. When the simulation starts a configuration can be selected. For the first run, I reccomend using the "baselineTestTemp" configuration which will start a simulation with 10 clients for each of VoIP, SSH, VoD, live video and file download applications.
 
-For questions contact Marcin: marcin.l.bosk@campus.tu-berlin.de
+For questions contact Marcin: bosk@in.tum.de
