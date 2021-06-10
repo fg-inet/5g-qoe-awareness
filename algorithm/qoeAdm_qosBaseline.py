@@ -7,6 +7,7 @@ import qoeEstimation as qoeEst
 import shutil
 import random
 import matplotlib.pyplot as plt
+import time
 
 def getBandForQoECli(host, desQoE):
     qoeEstimator = qoeEst.ClientQoeEstimator(host)
@@ -190,9 +191,9 @@ def genHTBconfig(configName, linkSpeed, leafClassesConfigs):
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"HTB.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/htbTree/'+configName+"HTB.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+    # shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
 
 # {leafName:[assuredRate, ceilRate, priority, queueNum, parentId, level]}
 # {innerName:[assuredRate, ceilRate, parentId, level]}
@@ -216,9 +217,10 @@ def genHTBconfigWithInner(configName, linkSpeed, leafClassesConfigs, innerClasse
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"HTB.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/htbTree/'+configName+"HTB.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+    # shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+
 
 # genHTBconfig('stasTest10a', 10000, {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]})
 
@@ -260,9 +262,10 @@ def genBaselineRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, se
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"Routing.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/baseQoS/'+configName+"Routing.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"Routing.xml", '../5gNS/simulations/configs/baseQoS')
+    # time.sleep(0.5)
+    # shutil.copy2(configName+"Routing.xml", '../5gNS/simulations/configs/baseQoS')
 
 
 # genBaselineRoutingConfig('stasTest10a', ['hostFDO'], [2], {'hostFDO':'10.3'}, ['serverFDO'],  {'serverFDO':'10.6'})
@@ -385,7 +388,7 @@ def genAllSliConfigsHTBRun(configName, baseName, namePrefix, trafficMix, availBa
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, int(availBand*1000000), ceilMultiplier, guaranteeMultiplier)
 
     f2 = open('../5gNS/simulations/runCommands'+namePrefix+'.txt', 'a+')
-    f2.write('./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c ' + configName + ' -s 1\n')
+    f2.write('./runAndExportSimConfigWithCleanup.sh -i qosFlowsConfig.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
 
@@ -415,5 +418,8 @@ for rate, maxCli in zip(rates, maxNumCli):
                     numHosts = admitted['host'+cli]
                     availResources = sliceRes[consideredClients.index(cli)]
                     print(cli, numHosts, availResources)
-                    genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTB'+cli+'Slice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
+                    if cli != 'SSH':
+                        genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTB'+cli+'Slice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
+                    else:
+                        genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTBSecureShellSlice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
 
