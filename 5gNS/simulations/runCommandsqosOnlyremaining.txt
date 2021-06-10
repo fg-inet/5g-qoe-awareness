@@ -1,0 +1,2 @@
+./runAndExportSimConfigWithCleanup.sh -i qosFlowsConfig.ini -c qosOnlyBase_R100_Q35_M100_C200 -s 1
+./runAndExportSimConfigWithCleanup.sh -i qosFlowsConfig.ini -c qosOnly5SlicesHTB_R100_Q35_M100_C200 -s 1
