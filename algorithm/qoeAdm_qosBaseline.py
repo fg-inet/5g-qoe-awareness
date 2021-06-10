@@ -326,7 +326,7 @@ def genBaselineIniConfig(confName, base, numHostsPerType, hostIPprefixes, availB
     configString += '*.router0.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR0 + '\n'
     configString += '*.router1.ppp[0].ppp.queue.classifier.packetDataFilters = ' + packDataFiltersR1 + '\n\n'
 
-    configString += '**.connFIX0.datarate = ' + str(availBand) + 'Kbps\n'
+    configString += '**.connFIX0.datarate = ' + str(availBand) + 'bps\n'
     configString += '**.connFIX0.delay = 40ms\n\n\n'
 
     f = open(confName+".txt", "w")
@@ -382,7 +382,7 @@ def genAllSliConfigsHTBRun(configName, baseName, namePrefix, trafficMix, availBa
     genHTBconfigWithInner(configName, int(availBand*1000), leafClassesConfigs, innerClassConfigs, numLev)
     hostNums = [numHostsPerType[x] for x in numHostsPerType]
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
-    genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, int(availBand*1000), ceilMultiplier, guaranteeMultiplier)
+    genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, int(availBand*1000000), ceilMultiplier, guaranteeMultiplier)
 
     f2 = open('../5gNS/simulations/runCommands'+namePrefix+'.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c ' + configName + ' -s 1\n')
