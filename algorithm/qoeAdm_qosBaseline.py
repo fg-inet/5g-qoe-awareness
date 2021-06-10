@@ -418,8 +418,5 @@ for rate, maxCli in zip(rates, maxNumCli):
                     numHosts = admitted['host'+cli]
                     availResources = sliceRes[consideredClients.index(cli)]
                     print(cli, numHosts, availResources)
-                    if cli != 'SSH':
-                        genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTB'+cli+'Slice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
-                    else:
-                        genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTBSecureShellSlice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
-
+                    cliIdent = cli[0]+'o'+cli[1:]
+                    genAllSliConfigsHTBRun(expNamePrefix+'5SlicesNoHTB'+cliIdent+'Slice_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, {cli : 1.0}, availResources/1000.0, qoE, [cli], [[cli]], ['connFIX0'], numHosts, ceil, mult, 'False', seed)
