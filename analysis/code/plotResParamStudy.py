@@ -9,6 +9,8 @@ import math
 import statistics
 from scipy import stats
 import os,sys,inspect
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.patches as patches
 
 import re
 
@@ -110,15 +112,15 @@ def filterDFType(df, filterType):
     return df.filter(like=filterType)
 
 def chooseName(dataName):
-    if dataName == 'hostVID':
+    if dataName == 'VID':
         return 'VoD'
-    elif dataName == 'hostFDO':
-        return 'Download'
-    elif dataName == 'hostSSH':
+    elif dataName == 'FDO':
+        return 'File Download'
+    elif dataName == 'SSH':
         return 'SSH'
-    elif dataName == 'hostVIP':
+    elif dataName == 'VIP':
         return 'VoIP'
-    elif dataName == 'hostLVD':
+    elif dataName == 'LVD':
         return 'Live Video'
 
 gbrToColor = {
@@ -240,18 +242,312 @@ def plotParameterStudyMOS(testPrefix, appType, mbrs, gbrs, qs, maxNumCliPlot):
     fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
     plt.close('all')
 
+
+def plotParameterStudyMOSheatMap(testPrefix, appType, mbrs, gbrs, qs, maxNumCliPlot):
+    print('-------------', testPrefix, '-------------')
+    prePath = '../exports/extracted/mos2/'
+    filenames = glob.glob(prePath+testPrefix+'*')
+    print('-> There are', len(filenames), 'experiments in this parameter study.')
+    filterName = 'Val'
+    
+    reqRunInfo = ['Q', 'M', 'C'] # Q = target QoE, M = GBR multiplier, C = MBR multiplier
+    reqRunInfo.append(appType) # This will get the number of clients in experiment
+
+    runResults = {}
+    numClis = []
+    minValue = 5.0
+
+    for filename in filenames:
+        fid = getFileInfo(filename, reqRunInfo)
+        if fid['Q'] == qs and fid['M'] in gbrs and fid['C'] in mbrs and fid[appType] <= maxNumCliPlot:
+            print('\t-> Run:', fid['name'], end=': ')
+            runDict = {}
+            runDict['Q'] = fid['Q'] # Target QoE in run
+            runDict['M'] = fid['M'] # GBR multiplier in run
+            runDict['C'] = fid['C'] # MBR multiplier in run
+            runDict['numCli'] = fid[appType] # Number of clients in run
+            if runDict['numCli'] not in numClis:
+                numClis.append(runDict['numCli'])
+            
+            # Getting values
+            runDF = pd.read_csv(filename)
+            valDF = filterDFType(filterDFType(runDF, filterName), appType)
+            meanRunVals = []
+
+            # Get mean for each client in run first
+            for col in valDF:
+                if len(valDF[col].dropna().tolist()) == 0:
+                    print('No MOS!', end='')
+                    meanRunVals.append(1.0)
+                else:
+                    meanRunVals.append(statistics.mean(valDF[col].dropna().tolist()))
+            # Then calculate the mean for fun based on client means
+            runDict['meanVal'] = statistics.mean(meanRunVals)
+            minValue = min(minValue, runDict['meanVal'])
+            print('mean QoE =', runDict['meanVal'])
+            runResults[fid['name']] = runDict # Store it ready to plot
+    
+    numClis = sorted(numClis)
+    # minmax = (1.0,4.5)
+    minmax = (minValue-0.05,4.5)
+
+    # Plot the means
+    # print(runResults)
+    heatMap = []
+    for i in range(len(mbrs)):
+        heatMap.append([])
+        for j in range(len(gbrs)):
+            for _ in range(len(gbrs)-j):
+                heatMap[i].append(0)
+    xTickLbls = []
+    for j in range(len(gbrs)):
+        for i in range(len(gbrs)-j):
+            xTickLbls.append(gbrs[j+i])
+    # print(len(heatMap), len(heatMap[0]))
+    fig, ax = plt.subplots(1, figsize=(len(heatMap[0])*2/3,len(heatMap)))
+
+    maxVal = 4.5
+    minVal = 1.0
+    for run in runResults:
+        cliIndex = numClis.index(runResults[run]['numCli'])
+        gbrIndex = gbrs.index(runResults[run]['M'])
+        cliOff = 0
+        for i in range(len(gbrs)-cliIndex, len(gbrs)):
+            cliOff += i
+        xAxisIdent = cliOff + gbrIndex
+        yAxisIdent = mbrs.index(runResults[run]['C'])
+        # print(runResults[run]['numCli'], runResults[run]['M'], runResults[run]['C'], xAxisIdent, xTickLbls[xAxisIdent])
+        heatMap[yAxisIdent][xAxisIdent] = runResults[run]['meanVal']
+        maxVal = max(maxVal, runResults[run]['meanVal'])
+        minVal = min(minVal, runResults[run]['meanVal'])
+        # print(xAxisIdent, yAxisIdent, runResults[run]['meanVal'])
+    
+    # print(heatMap)
+
+    norm = matplotlib.colors.Normalize(vmin=minVal, vmax=maxVal)
+    cmap = plt.cm.get_cmap(name='viridis',lut=1024)
+    im = ax.imshow(np.array(heatMap), norm=norm, cmap=cmap, aspect='auto')
+    ax.set_ylabel('MBR\nMultiplier [%]')
+    ax.set_xlabel('GBR Multiplier [%]')
+    divider = make_axes_locatable(plt.gca())
+    cax = divider.append_axes("right", "0.5%", pad="0.5%")
+    cbar = ax.figure.colorbar(im, ax=ax, norm=norm, cmap=cmap, aspect=15, cax=cax)
+    cbar.ax.set_ylabel('Mos Value', rotation=-90, va="bottom")
+    ticklabels = [str(1+x/2) for x in range(int((maxVal-minVal)*2)+1)]
+    print(ticklabels)
+    cbar.set_ticks(np.linspace(minVal, maxVal, len(ticklabels)))
+    cbar.set_ticklabels(ticklabels)
+    for i in range(len(heatMap)):
+        print(len(heatMap), len(heatMap[i]))
+    
+    # Major ticks
+    ax.set_yticks(np.arange(0, len(heatMap), 1))
+    ax.set_xticks(np.arange(0, len(heatMap[0]), 1))
+
+    # Labels for major ticks
+    ax.set_yticklabels(mbrs)
+    ax.set_xticklabels(xTickLbls)
+
+    # Minor ticks
+    ax.set_yticks(np.arange(-.5, len(heatMap), 1), minor=True)
+    ax.set_xticks(np.arange(-.5, len(heatMap[0]), 1), minor=True)
+
+    cliOff = 0
+    for i in range(len(gbrs), 0, -1):
+        rect = patches.Rectangle((cliOff-.44, -.47), 0.91, len(mbrs)-.06, linewidth=3, edgecolor='r', facecolor='none', zorder=100)
+        ax.add_patch(rect)
+        ax.text(cliOff-.5+i/2, -.75, str(numClis[len(gbrs)-i]), horizontalalignment='center')
+        cliOff += i
+        ax.vlines(cliOff-.5, -.5, len(heatMap)-.5, color='k')
+        
+
+    ax.grid(which='minor', color='w', linestyle='-', linewidth=2)
+    # ax.minorticks_off()
+
+    # Finish plotting
+    preOutPath = '../exports/paramStudyPlots/mosHeatMap/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    # ax.set_ylim(minmax)
+    # ax.set_xlim(-1,2*len(numClis)-1)
+
+    # plt.xticks(ticks, labels, rotation=0)
+    # plt.legend(handles=legendHandles, fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+    # plt.grid(axis='y')
+    plt.tight_layout()
+    # plt.ticklabel_format(style='plain')
+    
+    outPath = preOutPath+'sysUtilClient'+testPrefix+'_M'+str(gbrs)+'_C'+str(mbrs)+'_maxNumClis'+str(maxNumCliPlot)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    outPath = preOutPath+'sysUtilClient'+testPrefix+'_M'+str(gbrs)+'_C'+str(mbrs)+'_maxNumClis'+str(maxNumCliPlot)+'.pdf'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight')
+    plt.close('all')
+    return maxVal, minVal
+
+
+def plotParameterStudyMOSheatMapAllInOne(testPrefixes, appTypes, mbrs, gbrs, qs, maxNumCliPlot, selectedGBRMBR):
+    fig, axs = plt.subplots(len(testPrefixes), figsize=(10+sum([x for x in range(len(gbrs))])*2/3,(len(mbrs)-1)*len(testPrefixes)), sharex=True, sharey=True)
+    count = 0
+    for testPrefix, appType, selGBRMBR in zip(testPrefixes, appTypes, selectedGBRMBR):
+        print('-------------', testPrefix, '-------------')
+        prePath = '../exports/extracted/mos2/'
+        filenames = glob.glob(prePath+testPrefix+'*')
+        print('-> There are', len(filenames), 'experiments in this parameter study.')
+        filterName = 'Val'
+        
+        reqRunInfo = ['Q', 'M', 'C'] # Q = target QoE, M = GBR multiplier, C = MBR multiplier
+        reqRunInfo.append(appType) # This will get the number of clients in experiment
+
+        runResults = {}
+        numClis = []
+        minValue = 5.0
+
+        for filename in filenames:
+            fid = getFileInfo(filename, reqRunInfo)
+            if fid['Q'] == qs and fid['M'] in gbrs and fid['C'] in mbrs and fid[appType] <= maxNumCliPlot:
+                print('\t-> Run:', fid['name'], end=': ')
+                runDict = {}
+                runDict['Q'] = fid['Q'] # Target QoE in run
+                runDict['M'] = fid['M'] # GBR multiplier in run
+                runDict['C'] = fid['C'] # MBR multiplier in run
+                runDict['numCli'] = fid[appType] # Number of clients in run
+                if runDict['numCli'] not in numClis:
+                    numClis.append(runDict['numCli'])
+                
+                # Getting values
+                runDF = pd.read_csv(filename)
+                valDF = filterDFType(filterDFType(runDF, filterName), appType)
+                meanRunVals = []
+
+                # Get mean for each client in run first
+                for col in valDF:
+                    if len(valDF[col].dropna().tolist()) == 0:
+                        print('No MOS!', end='')
+                        meanRunVals.append(1.0)
+                    else:
+                        meanRunVals.append(statistics.mean(valDF[col].dropna().tolist()))
+                # Then calculate the mean for fun based on client means
+                runDict['meanVal'] = statistics.mean(meanRunVals)
+                minValue = min(minValue, runDict['meanVal'])
+                print('mean QoE =', runDict['meanVal'])
+                runResults[fid['name']] = runDict # Store it ready to plot
+        
+        numClis = sorted(numClis)
+        # minmax = (1.0,4.5)
+        minmax = (minValue-0.05,4.5)
+
+        # Plot the means
+        # print(runResults)
+        heatMap = []
+        for i in range(len(mbrs)):
+            heatMap.append([])
+            for j in range(len(gbrs)):
+                for _ in range(len(gbrs)-j):
+                    heatMap[i].append(0)
+        xTickLbls = []
+        for j in range(len(gbrs)):
+            for i in range(len(gbrs)-j):
+                xTickLbls.append(gbrs[j+i])
+        # print(len(heatMap), len(heatMap[0]))
+        # fig, ax = plt.subplots(1, figsize=(len(heatMap[0])*2/3,len(heatMap)))
+
+        maxVal = 4.5
+        minVal = 1.0
+        for run in runResults:
+            cliIndex = numClis.index(runResults[run]['numCli'])
+            gbrIndex = gbrs.index(runResults[run]['M'])
+            cliOff = 0
+            for i in range(len(gbrs)-cliIndex, len(gbrs)):
+                cliOff += i
+            xAxisIdent = cliOff + gbrIndex
+            yAxisIdent = mbrs.index(runResults[run]['C'])
+            # print(runResults[run]['numCli'], runResults[run]['M'], runResults[run]['C'], xAxisIdent, xTickLbls[xAxisIdent])
+            heatMap[yAxisIdent][xAxisIdent] = runResults[run]['meanVal']
+            maxVal = max(maxVal, runResults[run]['meanVal'])
+            minVal = min(minVal, runResults[run]['meanVal'])
+            # print(xAxisIdent, yAxisIdent, runResults[run]['meanVal'])
+        
+        # print(heatMap)
+
+        norm = matplotlib.colors.Normalize(vmin=minVal, vmax=maxVal)
+        cmap = plt.cm.get_cmap(name='viridis',lut=1024)
+        im = axs[count].imshow(np.array(heatMap), norm=norm, cmap=cmap, aspect='auto')
+        # axs[count].set_ylabel('MBR\nMultiplier [%]')
+        # axs[count].set_xlabel('GBR Multiplier [%]')
+        # divider = make_axes_locatable(plt.gca())
+        # cax = divider.append_axes("right", "0.5%", pad="0.5%")
+        cbar = axs[count].figure.colorbar(im, ax=axs[count], norm=norm, cmap=cmap, aspect=15, pad=0.01)
+        cbar.ax.set_ylabel(chooseName(appType)+'\nMOS Score', rotation=-90, va="bottom")
+        ticklabels = [str(1+x/2) for x in range(int((maxVal-minVal)*2)+1)]
+        # print(ticklabels)
+        cbar.set_ticks(np.linspace(minVal, maxVal, len(ticklabels)))
+        cbar.set_ticklabels(ticklabels)
+        # for i in range(len(heatMap)):
+        #     print(len(heatMap), len(heatMap[i]))
+
+        axs[count].scatter(sum([len(gbrs)-x for x in range(0, gbrs.index(selGBRMBR[0]))]), mbrs.index(selGBRMBR[1]), s=160.0, marker='o', c='maroon')
+    
+        # Major ticks
+        axs[count].set_yticks(np.arange(0, len(heatMap), 1))
+        axs[count].set_xticks(np.arange(0, len(heatMap[0]), 1))
+
+        # Labels for major ticks
+        axs[count].set_yticklabels(mbrs)
+        axs[count].set_xticklabels(xTickLbls)
+
+        # Minor ticks
+        axs[count].set_yticks(np.arange(-.5, len(heatMap), 1), minor=True)
+        axs[count].set_xticks(np.arange(-.5, len(heatMap[0]), 1), minor=True)
+
+        cliOff = 0
+        for i in range(len(gbrs), 0, -1):
+            rect = patches.Rectangle((cliOff-.4, -.47), 0.8, len(mbrs)-.06, linewidth=4.0, edgecolor='maroon', facecolor='none', zorder=100)
+            axs[count].add_patch(rect)
+            if count == 0: 
+                axs[count].text(cliOff-.5+i/2, -.75, str(numClis[len(gbrs)-i]), horizontalalignment='center', rotation=90)
+            cliOff += i
+            axs[count].vlines(cliOff-.5, -.5, len(heatMap)-.5, color='k', linewidth=6.0)
+        
+
+        axs[count].grid(which='minor', color='w', linestyle='-', linewidth=2)
+        count+=1
+    # ax.minorticks_off()
+    # Finish plotting
+    preOutPath = '../exports/paramStudyPlots/mosHeatMap/'
+    if not os.path.exists(preOutPath):
+        os.makedirs(preOutPath)
+    fig.text(0.095, 0.5, 'MBR Multiplier [%]', va='center', rotation='vertical')
+    # fig.text(0.5, 0, 'GBR Multiplier [%]', va='center', rotation='horizontal')
+    # plt.ylabel('MBR Multiplier [%]')
+    plt.xlabel('GBR Multiplier [%]')
+    plt.xticks(rotation=90)
+
+    outPath = preOutPath+'parameterStudyMOSall_M'+str(gbrs)+'_C'+str(mbrs)+'_maxNumClis'+str(maxNumCliPlot)+'.png'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight', format='png')
+    outPath = preOutPath+'parameterStudyMOSall_M'+str(gbrs)+'_C'+str(mbrs)+'_maxNumClis'+str(maxNumCliPlot)+'.pdf'
+    fig.savefig(outPath, dpi=100, bbox_inches='tight')
+    plt.close('all')
+    return maxVal, minVal
+
+
 ############################################################################################
 
-testNames = ['parameterStudyVoIP'] # Name prefix of the QoE test
+testNames = ['parameterStudyVoD','parameterStudyLive','parameterStudySecureShell','parameterStudyVoIP', 'parameterStudyFileDownloadFix'] # Name prefix of the QoE test
 targetQoEs = [35] # Target QoEs
 mbrs = [100,125,150,175,200]
 gbrs = [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
 sliNamess = [['none']]
-clients = ['VIP']
-maxNumCliPlot = [142,200]
-for testName, client in zip(testNames, clients):
-    for tQ in targetQoEs:
-        for numCli in maxNumCliPlot:
-            plotParameterStudyMOS(testName, client, mbrs, gbrs, tQ, numCli)
-            for mbr in mbrs:
-                plotParameterStudyMOS(testName, client, [mbr], gbrs, tQ, numCli)
+clients = ['VID','LVD','SSH','VIP','FDO']
+# maxNumCliPlot = [142,200]
+maxNumCliPlot = [200]
+selectedGBRMBR = [[90,125],[80,150],[100,100],[70,200],[100,150]]
+maxi = 0
+mini = 5
+plotParameterStudyMOSheatMapAllInOne(testNames, clients, mbrs, gbrs, targetQoEs[0], maxNumCliPlot[0], selectedGBRMBR)
+# for testName, client in zip(testNames, clients):
+#     for tQ in targetQoEs:
+#         for numCli in maxNumCliPlot:
+#             # plotParameterStudyMOS(testName, client, mbrs, gbrs, tQ, numCli)
+#             maxVal, minVal = plotParameterStudyMOSheatMap(testName, client, mbrs, gbrs, tQ, numCli)
+#             # for mbr in mbrs:
+#             #     plotParameterStudyMOS(testName, client, [mbr], gbrs, tQ, numCli)

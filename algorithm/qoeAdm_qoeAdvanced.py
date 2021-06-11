@@ -58,8 +58,21 @@ def simpleAdmission(expName, availBand, desiredQoE, trafficMix, maxNumClis, ceil
     resultString += 'Client type requirements:\n'
     for host in trafficMix:
         reqBitratesPerType[host] = int(getBandForQoECli('host'+host, desiredQoE))
-        ceilBitrates['host'+host] = int(reqBitratesPerType[host] * ceilMultiplier)
-        assuredBitrates['host'+host] = int(reqBitratesPerType[host] * guaranteeMultiplier)
+        if host == 'VID':
+            ceilBitrates['host'+host] = int(reqBitratesPerType[host] * 1.25)
+            assuredBitrates['host'+host] = int(reqBitratesPerType[host] * 0.9)
+        elif host == 'LVD':
+            ceilBitrates['host'+host] = int(reqBitratesPerType[host] * 1.5)
+            assuredBitrates['host'+host] = int(reqBitratesPerType[host] * 0.8)
+        elif host == 'FDO':
+            ceilBitrates['host'+host] = int(reqBitratesPerType[host] * 1.5)
+            assuredBitrates['host'+host] = int(reqBitratesPerType[host] * 1.0)
+        elif host == 'SSH':
+            ceilBitrates['host'+host] = int(reqBitratesPerType[host] * 1.0)
+            assuredBitrates['host'+host] = int(reqBitratesPerType[host] * 1.0)
+        elif host == 'VIP':
+            ceilBitrates['host'+host] = int(reqBitratesPerType[host] * 2.0)
+            assuredBitrates['host'+host] = int(reqBitratesPerType[host] * 0.7)
         resultString += '\tFor a QoE of ' + str(desiredQoE) + ' ' + str(host) + ' needs ' + str(reqBitratesPerType[host]) + ' kbps. It translates to a GBR of ' + str(assuredBitrates['host'+host]) + ' kbps and a MBR of ' + str(ceilBitrates['host'+host]) + 'kbps.\n'
         numHostsAdmittedPerType['host'+host] = 0
         numHostsRejectedPerType['host'+host] = 0
@@ -387,7 +400,7 @@ targetQoE = [3.5]
 assuredMulti = [1.0]
 rates = [100]
 maxNumCli = [120]
-ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
+ceils = [1.0]
 trafficMix = {'VID' : 0.4, 
               'LVD' : 0.2, 
               'FDO' : 0.05, 
@@ -395,7 +408,7 @@ trafficMix = {'VID' : 0.4,
               'SSH' : 0.05}
 # seed = 'aNewHope'
 seed = 'thisIsInteresting'
-expNamePrefix = 'qosFlows'
+expNamePrefix = 'qoeFlows'
 consideredClients = ['VID', 'LVD', 'FDO', 'VIP', 'SSH']
 for rate, maxCli in zip(rates, maxNumCli):
     for qoE in targetQoE:
