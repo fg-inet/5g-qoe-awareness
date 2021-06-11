@@ -322,7 +322,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/parameterStudyDownloadFixPart1.txt', 'a+')
+    f2 = open('../5gNS/simulations/parameterStudyDownloadFixPart2.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i parameterStudyConfiguration.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
@@ -388,26 +388,26 @@ defaultNumClients = 100
 ceils = [1.0, 1.5, 2.0, 1.25, 1.75]
 dPrio = [False]
 client = 'FDO'
-studyName = 'parameterStudyFileDownloadFixPart1'
+studyName = 'parameterStudyFileDownloadFixPart2'
 
 counter = 0
 for rate in rates:
     for qoE in targetQoE:
         for ceil in ceils:
             rate = getBandForQoECli('host'+client, qoE)*defaultNumClients/1000
-            # for mult1 in assuredMulti:
-            #     maxCli = int(defaultNumClients/mult1)
-            #     for mult in [x for x in assuredMulti if x <= mult1]:
-            #         # print(int(defaultNumClients/mult1))
-            #         for dp in dPrio:
-            #             # print(maxCli, mult)
-            #             genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
-            #             counter += 1
-            for mult in assuredMulti:
-                maxCli = int(defaultNumClients/mult)
-                for dp in dPrio:
-                    print(maxCli, mult, ceil)
-                    # counter+=1
-                    genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
-                    counter += 1
+            for mult1 in assuredMulti:
+                maxCli = int(defaultNumClients/mult1)
+                for mult in [x for x in assuredMulti if x < mult1]:
+                    # print(int(defaultNumClients/mult1))
+                    for dp in dPrio:
+                        # print(maxCli, mult, ceil)
+                        genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
+                        counter += 1
+            # for mult in assuredMulti:
+            #     maxCli = int(defaultNumClients/mult)
+            #     for dp in dPrio:
+            #         print(maxCli, mult, ceil)
+            #         # counter+=1
+            #         genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
+            #         counter += 1
 print(counter)
