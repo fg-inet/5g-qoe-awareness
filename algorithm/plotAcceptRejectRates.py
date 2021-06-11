@@ -19,7 +19,11 @@ matplotlib.rc('lines', markersize=8)
 def getBandForQoECli(host, desQoE):
     qoeEstimator = qoeEst.ClientQoeEstimator(host)
     qoe = np.array([qoeEstimator.estQoEb(x) for x in qoeEstimator.yAxis])
+    if host == 'hostLVD':
+        desQoE += 0.1
     idx = np.abs(qoe - desQoE).argmin()
+    while qoe[idx] < desQoE:
+        idx += 1
     return qoeEstimator.yAxis[idx]
 
 def determineResourceToSlice(availBand, trafficMix, reqBitratesPerType):
@@ -60,17 +64,7 @@ def simpleAdmission(expName, availBand, desiredQoE, trafficMix, maxNumClis, ceil
 
     resultString += 'Client type requirements:\n'
     for host in trafficMix:
-        if host == 'LVD':
-            if desiredQoE == 3.0:
-                reqBitratesPerType[host] = int(420.0 * 1.1)
-            elif desiredQoE == 3.5:
-                reqBitratesPerType[host] = int(660.0 * 1.1)
-            elif desiredQoE == 4.0:
-                reqBitratesPerType[host] = int(1820.0 * 1.1)
-            elif desiredQoE == 4.5:
-                reqBitratesPerType[host] = int(4600.0 * 1.1)
-        else:
-            reqBitratesPerType[host] = int(getBandForQoECli('host'+host, desiredQoE))
+        reqBitratesPerType[host] = int(getBandForQoECli('host'+host, desiredQoE))
         ceilBitrates['host'+host] = int(reqBitratesPerType[host] * ceilMultiplier)
         assuredBitrates['host'+host] = int(reqBitratesPerType[host] * guaranteeMultiplier)
         resultString += '\tFor a QoE of ' + str(desiredQoE) + ' ' + str(host) + ' needs ' + str(reqBitratesPerType[host]) + ' kbps. It translates to a GBR of ' + str(assuredBitrates['host'+host]) + ' kbps and a MBR of ' + str(ceilBitrates['host'+host]) + 'kbps.\n'
@@ -206,7 +200,7 @@ def plotNumberAdmittedRejected(configData, cN):
     ax.bar(-10,5,color='white', edgecolor='black', hatch='/', label='Accepted')
     ax.bar(-10,5,color='white', edgecolor='black', hatch='x', label='Rejected')
 
-    ax.set_ylim(0,400)
+    ax.set_ylim(0,120)
     ax.set_xlim(-1,xPosition)
 
     plt.grid(axis='y')
@@ -256,8 +250,8 @@ def plotNumberRejectionRate(configData, cN):
         ax.plot(sli, hostRejRate[appType], '-o',color=colorMapping[appType.split('host')[-1]], label=chooseName(appType))
     ax.plot(sli, hostRejRate['all'], '-o',color='black', label='Overall')
 
-    ax.set_ylim(0,100)
-    ax.set_xlim(0,xPosition-1)
+    ax.set_ylim(0,25)
+    ax.set_xlim(-0.1,xPosition-0.9)
 
     plt.grid(axis='y')
     plt.xticks(ticks, labels, rotation=0)
@@ -268,33 +262,46 @@ def plotNumberRejectionRate(configData, cN):
 
     # plt.show()
 
-targetQoE = [3.0, 3.5, 4.0]
-assuredMulti = [1.0,0.85]
+# targetQoE = [3.5]
+# assuredMulti = [1.0,0.85]
+# rates = [100]
+# maxNumCli = [400]
+# ceils = [2.0]
+# trafficMix = {'VID' : 0.4, 
+#               'LVD' : 0.2, 
+#               'FDO' : 0.05, 
+#               'VIP' : 0.3, 
+#               'SSH' : 0.05}
+# seed = 'aNewHope'
+# expNamePrefix = 'aNewHopeV1'
+
+targetQoE = [3.5]
+assuredMulti = [1.0]
 rates = [100]
-maxNumCli = [400]
-ceils = [2.0]
+maxNumCli = [120]
+ceils = [1.0]
 trafficMix = {'VID' : 0.4, 
               'LVD' : 0.2, 
               'FDO' : 0.05, 
               'VIP' : 0.3, 
               'SSH' : 0.05}
-seed = 'aNewHope'
-expNamePrefix = 'aNewHopeV1'
+seed = 'thisIsInteresting'
+expNamePrefix = 'QoS-Flows'
 
 for rate, maxCli in zip(rates, maxNumCli):
     for qoE in targetQoE:
         for mult in assuredMulti:
             for ceil in ceils:
-                data1sli = simpleAdmission(expNamePrefix+'GBR'+str(int(mult*100))+'No12Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], seed)
-                data2sli = simpleAdmission(expNamePrefix+'GBR'+str(int(mult*100))+'No2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], seed)
-                data5sli = simpleAdmission(expNamePrefix+'GBR'+str(int(mult*100))+'No3_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], seed)
+                data1sli = simpleAdmission(expNamePrefix+'Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], seed)
+                # data2sli = simpleAdmission(expNamePrefix+'GBR'+str(int(mult*100))+'No2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], seed)
+                data5sli = simpleAdmission(expNamePrefix+'_5sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), rate*1000, qoE, trafficMix, maxCli, ceil, mult, [['VID'], ['LVD'], ['FDO'], ['VIP'], ['SSH']], seed)
                 confDict = {
                     '1sli' : data1sli,
-                    '2sli' : data2sli,
+                    # '2sli' : data2sli,
                     '5sli' : data5sli
                 }
-                plotNumberAdmittedRejected(confDict, expNamePrefix+'GBR'+str(int(mult*100))+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)))
-                plotNumberRejectionRate(confDict, expNamePrefix+'GBR'+str(int(mult*100))+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)))
+                plotNumberAdmittedRejected(confDict, expNamePrefix+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)))
+                plotNumberRejectionRate(confDict, expNamePrefix+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)))
                 # exit()
                 # genAllSliConfigsHTBRun(expNamePrefix+'GBR'+str(int(mult*100))+'No12Base_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, trafficMix, rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO', 'VIP', 'SSH']], ['connFIX0'], maxCli, ceil, mult, 'False', seed)
                 # genAllSliConfigsHTBRun(expNamePrefix+'GBR'+str(int(mult*100))+'No2_2sli_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100)), 'liteCbaselineTestTokenQoS_base', expNamePrefix, trafficMix, rate, qoE, ['VID', 'LVD', 'FDO', 'VIP', 'SSH'], [['VID', 'LVD', 'FDO'], ['VIP', 'SSH']], ['connBWS', 'connDES'], maxCli, ceil, mult, 'False', seed)

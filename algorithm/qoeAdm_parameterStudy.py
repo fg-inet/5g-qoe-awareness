@@ -122,9 +122,9 @@ def genHTBconfig(configName, linkSpeed, leafClassesConfigs):
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"HTB.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/htbTree/'+configName+"HTB.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+    # shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
 
 # {leafName:[assuredRate, ceilRate, priority, queueNum, parentId, level]}
 # {innerName:[assuredRate, ceilRate, parentId, level]}
@@ -138,19 +138,16 @@ def genHTBconfigWithInner(configName, linkSpeed, leafClassesConfigs, innerClasse
         prepareHTBClassXML(configElem, 'inner', inner, str(innerClassesConfigs[inner][2]), str(innerClassesConfigs[inner][0]), str(innerClassesConfigs[inner][1]), '1600', '1600', str(innerClassesConfigs[inner][3]), '1600', '60', '', '')
     
     for leaf in leafClassesConfigs:
-        if 'hostFDO' in leaf:
-            prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), '0', str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
-        else:
-            prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), str(leafClassesConfigs[leaf][0]), str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
+        prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), str(leafClassesConfigs[leaf][0]), str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
     
     
     # prepareHTBClassXML(configElem, 'leaf', 'Two', 'root', '2000', '5000', '1600', '1600', '0', '1600', '60', '0', '1')
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"HTB.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/htbTree/'+configName+"HTB.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
+    # shutil.copy2(configName+"HTB.xml", '../5gNS/simulations/configs/htbTree')
 
 # genHTBconfig('stasTest10a', 10000, {'One':[4000, 7000, 0, 0], 'Two':[2000, 5000, 0, 1]})
 
@@ -192,9 +189,9 @@ def genBaselineRoutingConfig(configName, hostTypes, hostNums, hostIPprefixes, se
 
     # create a new XML file with the results
     mydata = ET.tostring(configElem)
-    myfile = open(configName+"Routing.xml", "wb")
+    myfile = open('../5gNS/simulations/configs/baseQoS/'+configName+"Routing.xml", "wb")
     myfile.write(mydata)
-    shutil.copy2(configName+"Routing.xml", '../5gNS/simulations/configs/baseQoS')
+    # shutil.copy2(configName+"Routing.xml", '../5gNS/simulations/configs/baseQoS')
 
 
 # genBaselineRoutingConfig('stasTest10a', ['hostFDO'], [2], {'hostFDO':'10.3'}, ['serverFDO'],  {'serverFDO':'10.6'})
@@ -325,7 +322,7 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
     genBaselineRoutingConfig(configName, cliTypes, hostNums, hostIPprefixes, serverTypes, serverIPprefixes)
     genBaselineIniConfig(configName, baseName, numHostsPerType, hostIPprefixes, availBand, ceilMultiplier, guaranteeMultiplier)
 
-    f2 = open('../5gNS/simulations/parameterStudyDownload.txt', 'a+')
+    f2 = open('../5gNS/simulations/parameterStudyDownloadFixPart1.txt', 'a+')
     f2.write('./runAndExportSimConfig.sh -i parameterStudyConfiguration.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
@@ -382,29 +379,35 @@ def genAllSliConfigsHTBRun(configName, baseName, availBand, desiredQoE, types, h
 # studyName = 'parameterStudyLive'
 
 ####################################################################
-# # Settings for parameter study for the File Download client
-# targetQoE = [3.5]
-# assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
-# # assuredMulti = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
-# rates = [100]
-# defaultNumClients = 100
+# Settings for parameter study for the File Download client
+targetQoE = [3.5]
+assuredMulti = [1.0, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5]
+rates = [100]
+defaultNumClients = 100
 # ceils = [1.0, 1.25, 1.5, 1.75, 2.0]
-# # ceils = [1.0, 1.5, 2.0]
-# dPrio = [False]
-# client = 'FDO'
-# studyName = 'parameterStudyFileDownload'
+ceils = [1.0, 1.5, 2.0, 1.25, 1.75]
+dPrio = [False]
+client = 'FDO'
+studyName = 'parameterStudyFileDownloadFixPart1'
 
 counter = 0
 for rate in rates:
     for qoE in targetQoE:
-        rate = getBandForQoECli('host'+client, qoE)*defaultNumClients/1000
-        for mult1 in assuredMulti:
-            maxCli = int(defaultNumClients/mult1)
-            for mult in [x for x in assuredMulti if x <= mult1]:
-                # print(int(defaultNumClients/mult1))
-                for ceil in ceils:
-                    for dp in dPrio:
-                        # print(maxCli, mult)
-                        genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
-                        counter += 1
+        for ceil in ceils:
+            rate = getBandForQoECli('host'+client, qoE)*defaultNumClients/1000
+            # for mult1 in assuredMulti:
+            #     maxCli = int(defaultNumClients/mult1)
+            #     for mult in [x for x in assuredMulti if x <= mult1]:
+            #         # print(int(defaultNumClients/mult1))
+            #         for dp in dPrio:
+            #             # print(maxCli, mult)
+            #             genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
+            #             counter += 1
+            for mult in assuredMulti:
+                maxCli = int(defaultNumClients/mult)
+                for dp in dPrio:
+                    print(maxCli, mult, ceil)
+                    # counter+=1
+                    genAllSliConfigsHTBRun(studyName+'-maxCli'+str(maxCli)+'_R'+str(int(rate))+'_Q'+str(int(qoE*10))+'_M'+str(int(mult*100))+'_C'+str(int(ceil*100))+'_P'+str(dp), 'liteCbaselineTestTokenQoS_base', rate, qoE, [client], [[client]], ['connFIX0'], maxCli, defaultNumClients, ceil, mult, dp)
+                    counter += 1
 print(counter)

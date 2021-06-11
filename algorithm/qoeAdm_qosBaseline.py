@@ -12,18 +12,12 @@ import time
 def getBandForQoECli(host, desQoE):
     qoeEstimator = qoeEst.ClientQoeEstimator(host)
     qoe = np.array([qoeEstimator.estQoEb(x) for x in qoeEstimator.yAxis])
-    # print(qoe)
     if host == 'hostLVD':
         desQoE += 0.1
     idx = np.abs(qoe - desQoE).argmin()
     while qoe[idx] < desQoE:
         idx += 1
-    # print('\t-> Target:', desQoE, '; Selected:', qoe[idx], '; Bitrate:', qoeEstimator.yAxis[idx])
     return qoeEstimator.yAxis[idx]
-    # qoeEstimator = qoeEst.ClientQoeEstimator(host)
-    # qoe = np.array([qoeEstimator.estQoEb(x) for x in qoeEstimator.yAxis])
-    # idx = np.abs(qoe - desQoE).argmin()
-    # return qoeEstimator.yAxis[idx]
 
 def determineResourceToSlice(availBand, trafficMix, reqBitratesPerType):
     aB = availBand
@@ -207,10 +201,10 @@ def genHTBconfigWithInner(configName, linkSpeed, leafClassesConfigs, innerClasse
         prepareHTBClassXML(configElem, 'inner', inner, str(innerClassesConfigs[inner][2]), str(innerClassesConfigs[inner][0]), str(innerClassesConfigs[inner][1]), '1600', '1600', str(innerClassesConfigs[inner][3]), '1600', '60', '', '')
     
     for leaf in leafClassesConfigs:
-        if 'hostFDO' in leaf:
-            prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), '0', str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
-        else:
-            prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), str(leafClassesConfigs[leaf][0]), str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
+        # if 'hostFDO' in leaf:
+        #     prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), '0', str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
+        # else:
+        prepareHTBClassXML(configElem, 'leaf', leaf, str(leafClassesConfigs[leaf][4]), str(leafClassesConfigs[leaf][0]), str(leafClassesConfigs[leaf][1]), '1600', '1600', str(leafClassesConfigs[leaf][5]), '1600', '60', str(leafClassesConfigs[leaf][2]), str(leafClassesConfigs[leaf][3]))
     
     
     # prepareHTBClassXML(configElem, 'leaf', 'Two', 'root', '2000', '5000', '1600', '1600', '0', '1600', '60', '0', '1')
