@@ -278,7 +278,7 @@ def plotNumberRejectionRate(configData, cN):
 targetQoE = [3.5]
 assuredMulti = [1.0]
 rates = [100]
-maxNumCli = [120]
+maxNumCli = [150]
 ceils = [1.0]
 trafficMix = {'VID' : 0.4, 
               'LVD' : 0.2, 
@@ -286,7 +286,7 @@ trafficMix = {'VID' : 0.4,
               'VIP' : 0.3, 
               'SSH' : 0.05}
 seed = 'thisIsInteresting'
-expNamePrefix = 'QoS-Flows'
+expNamePrefix = 'QoS-Flows-Trial2'
 
 for rate, maxCli in zip(rates, maxNumCli):
     for qoE in targetQoE:

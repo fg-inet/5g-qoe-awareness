@@ -423,29 +423,44 @@ def plotQoE(testPrefix, appTypes, mbrs, gbr, q):
         rGbr = int(runInfo[1][1:])
         rQ = int(runInfo[0][1:])/10
         print(runInfo, rMbr, rGbr, rQ)
+        ax = axs
+        if len(runs) > 1:
+            ax = axs[mbrs.index(rMbr)]
         for aT in appTypes:
             xPosition = appTypes.index(aT)
             data = runs[run][aT]
-            axs[mbrs.index(rMbr)].boxplot(data, positions=[xPosition], notch=True, patch_artist=True,
+            ax.boxplot(data, positions=[xPosition], notch=True, patch_artist=True,
                                           boxprops=dict(facecolor=appTypeToColor[aT], color=appTypeToColor[aT]),
                                           capprops=dict(color=appTypeToColor[aT]),
                                           whiskerprops=dict(color=appTypeToColor[aT]),
                                           flierprops=dict(color='black', markeredgecolor='black'),
+                                          showmeans=True,
                                           widths=0.75, zorder=0)
-        axs[mbrs.index(rMbr)].title.set_text('MBR = '+str(rMbr)+'%')
-        axs[mbrs.index(rMbr)].grid(axis='y')
-        axs[mbrs.index(rMbr)].set_ylim(2.9,4.4)
-        axs[mbrs.index(rMbr)].set_xlim(-0.5,len(appTypes)+0.5)
-        axs[mbrs.index(rMbr)].set_xticks([])
+        ax.title.set_text('MBR = '+str(rMbr)+'%')
+        ax.grid(axis='y')
+        if 'AdmCon' in testPrefix:
+            ax.set_ylim(1.5,4.5)
+        else:
+            ax.set_ylim(2.9,4.4)
+        ax.set_xlim(-0.5,len(appTypes)+0.5)
+        ax.set_xticks([])
+
+    ax = axs
+    if len(runs) > 1:
+        ax = axs[-1]
 
     for aT in appTypes:
-        axs[-1].bar(-10,5,color=appTypeToColor[aT], edgecolor='black', label=chooseName('host'+aT))
-    axs[-1].legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
+        ax.bar(-10,5,color=appTypeToColor[aT], edgecolor='black', label=chooseName('host'+aT))
+    ax.legend(fontsize=25, bbox_to_anchor=(1, 1), loc='upper left')
 
+
+    ax = axs
+    if len(runs) > 1:
+        ax = axs[0]
     preOutPath = '../exports/plots/flows/mos/'
     if not os.path.exists(preOutPath):
         os.makedirs(preOutPath)
-    axs[0].set_ylabel("MOS Score")
+    ax.set_ylabel("MOS Score")
 
     plt.suptitle(testPrefix)
     
@@ -456,16 +471,41 @@ def plotQoE(testPrefix, appTypes, mbrs, gbr, q):
 
 ############################################################################################
 
-testNames = ['qosOnly'] # Name prefix of the QoE test
+testNames = ['qosFlows'] # Name prefix of the QoE test
 targetQoEs = [35] # Target QoEs
 mbrs = [100,125,150,175,200]
 gbrs = [100]
 subconfNames = ['Base', '5SlicesHTB', '5SlicesNoHTB']
 clients = ['VID', 'LVD', 'FDO', 'VIP', 'SSH']
-maxNumCliPlot = [142,200]
 for testName, client in zip(testNames, clients):
     for tQ in targetQoEs:
         for gbr in gbrs:
-            # for subconfName in subconfNames:
-            #     plotQoE(testName+subconfName, clients, mbrs, gbr, tQ)
+            for subconfName in subconfNames:
+                plotQoE(testName+subconfName, clients, mbrs, gbr, tQ)
             plotQoEcomp(testName, subconfNames, clients, mbrs, gbr, tQ)
+
+testNames = ['qoeFlows'] # Name prefix of the QoE test
+targetQoEs = [35] # Target QoEs
+mbrs = [100]
+gbrs = [100]
+subconfNames = ['Base', '5SlicesHTB', '5SlicesNoHTB']
+clients = ['VID', 'LVD', 'FDO', 'VIP', 'SSH']
+for testName, client in zip(testNames, clients):
+    for tQ in targetQoEs:
+        for gbr in gbrs:
+            for subconfName in subconfNames:
+                plotQoE(testName+subconfName, clients, mbrs, gbr, tQ)
+            plotQoEcomp(testName, subconfNames, clients, mbrs, gbr, tQ)
+
+testNames = ['bestEffort'] # Name prefix of the QoE test
+targetQoEs = [35] # Target QoEs
+mbrs = [100]
+gbrs = [100]
+subconfNames = ['AdmCon', 'NoAdmCon']
+clients = ['VID', 'LVD', 'FDO', 'VIP', 'SSH']
+for testName, client in zip(testNames, clients):
+    for tQ in targetQoEs:
+        for gbr in gbrs:
+            for subconfName in subconfNames:
+                plotQoE(testName+subconfName, clients, mbrs, gbr, tQ)
+            # plotQoEcomp(testName, subconfNames, clients, mbrs, gbr, tQ)
