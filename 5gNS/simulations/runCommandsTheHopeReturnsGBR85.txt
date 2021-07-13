@@ -1,3 +1,0 @@
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c theHopeReturnsGBR85No12Base_R100_Q35_M85_C200_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c theHopeReturnsGBR85No2_2sli_R100_Q35_M85_C200_PFalse -s 1
-./runAndExportSimConfig.sh -i htbSimpleTestLite.ini -c theHopeReturnsGBR85No3_5sli_R100_Q35_M85_C200_PFalse -s 1
