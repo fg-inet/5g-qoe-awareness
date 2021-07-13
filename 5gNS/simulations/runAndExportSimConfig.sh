@@ -49,25 +49,5 @@ opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp
 ###### Export results from OMNet++ to csv ######
 cd results
 ./export_results_individual_NS.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
-### Export some queue scalars as well ###
-# ./export_results_individual_NS_onlyR1Queues.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
-
-###### Extract necessary information from the csv's ######
-cd ../../../analysis/${config}
-name=$(ls)
-cd ../code
-python3 parseResNE.py ${config} ${slices} ${name} # Extract required information from the scavetool csv's
-# Fix possibly broken MOS scores of VoD, Live and SSH (Which are calculated using python scripts during simulation. These scripts may randomly fail...)
-cd sshMOScalcFiles/code
-python3 recalcQoE.py ${config} ${name} # First take care of SSH
-cd ../../videoMOScalcFiles/code 
-python3 recalcQoE.py ${config} ${name} # Now take care of both video clients
-cd ../..
-python3 remakeMOSexports.py ${config} ${name} # Remake the mos results to include recalculated values
-# python3 parseResInvestigation.py ${config} ${slices} ${name}
-
-###### Plot basic plots ######
-python3 plotResNE.py ${config} ${slices} ${name} # Plot everything
-# python3 plotResInvestigation.py ${config} ${slices} ${name} # Plot everything
 
 echo "Simulation, exports and initial plots are complete for ${config}";
