@@ -21,8 +21,7 @@ import inet.queueing.base.PacketSchedulerBase;
 import inet.queueing.contract.IPacketScheduler;
 
 //
-// This classifier pops packets from the first non-empty among its connected
-// packet providers.
+// This scheduler pops packets according to the HTB criterion
 //
 simple HTBScheduler extends PacketSchedulerBase like IPacketScheduler
 {
