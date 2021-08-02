@@ -344,7 +344,7 @@ def genAllSliConfigsHTBRun(configName, baseName, namePrefix, trafficMix, availBa
     f2.write('./runAndExportSimConfigWithCleanup.sh -i qosFlowsConfig.ini -c ' + configName + ' -s 1\n')
     f2.close()
 
-### !!! IMPORTANT !!! The generated configs are integrated into qosFlowsConfig.ini and will only work if integrated into that file!!!
+### !!! IMPORTANT !!! The generated configs are automatically integrated into qosFlowsConfig.ini and will only work if integrated into that file!!!
 targetQoE = [3.5]
 assuredMulti = [1.0]
 rates = [100]
