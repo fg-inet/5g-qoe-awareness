@@ -5,6 +5,7 @@ Git repository which includes:
 2. Additional files for the INET framework that include all custom applications used in the simulation (`inetCorrections` folder)
 3. Scripts for configuration generation for simulations used in the publication (in the `algorithm` folder)
 5. Configurations for Experiments run for the "Using 5G QoS Mechanisms to Achieve QoE-Aware Resource Allocation" publication. (in `5gNS/simulations` folder and its subfolders)
+6. Some scripts used to calculate the MOS of VoD, Live, and SSH applications (in the `postProcessingMOS` folder)
 
 Requirements for Omnet++ simulation:
 1. Omnet++ version 5.5.1 - download here: https://omnetpp.org/download/old

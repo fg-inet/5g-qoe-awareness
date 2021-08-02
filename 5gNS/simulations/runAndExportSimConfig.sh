@@ -37,6 +37,6 @@ opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp
 cd results
 ./export_results_individual_NS.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
 
-echo "!NOTE! MOS of VoD, Live and SSH needs to be calculated independently. Scripts from sshMOScalcFiles and videoMOScalcFiles may be used to do so.";
+echo "!NOTE! MOS of VoD, Live and SSH needs to be calculated independently. Scripts from postProcessingMOS folder may be used to do so.";
 
 echo "Simulation, exports and initial plots are complete for ${config}";

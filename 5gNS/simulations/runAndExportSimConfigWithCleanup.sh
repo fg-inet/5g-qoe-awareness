@@ -37,9 +37,6 @@ opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../install
 cd results
 ./export_results_individual_NS.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
 
-rm -rf ../../5gNS/simulations/results/${config}/
-
-echo "!NOTE! MOS of VoD, Live and SSH needs to be calculated independently. Scripts from sshMOScalcFiles and videoMOScalcFiles may be used to do so.";
-
+echo "!NOTE! MOS of VoD, Live and SSH needs to be calculated independently. Scripts from postProcessingMOS may be used to do so.";
 
 echo "Simulation and exports are complete for ${config}";
