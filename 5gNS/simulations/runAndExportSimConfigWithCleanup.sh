@@ -31,12 +31,15 @@ fi
 ###### Run a single simulation config. Note: The config should only have one run here!!! ######
 ###### You may need to relink the paths depending on your machine!!!!! ######
 
-opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../omnetpp-5.5.1/samples/inet4/src:../../../omnetpp-5.5.1/samples/inet4/examples:../../../omnetpp-5.5.1/samples/inet4/tutorials:../../../omnetpp-5.5.1/samples/inet4/showcases
+opp_runall -j1 -b1 opp_run ${iniFile} -u Cmdenv -c ${config} -l ../../../installs/omnetpp-5.5.1/samples/inet4/src/INET -m -n .:../src:../../../installs/omnetpp-5.5.1/samples/inet4/src:../../../installs/omnetpp-5.5.1/samples/inet4/examples:../../../installs/omnetpp-5.5.1/samples/inet4/tutorials:../../../installs/omnetpp-5.5.1/samples/inet4/showcases
 
 ###### Export results from OMNet++ to csv ######
 cd results
 ./export_results_individual_NS.sh -f 0 -l 0 -r ${slices} -s ${config} -o ../../../analysis/${config} -t ${config} -d ${config}
 
+rm -rf ../../5gNS/simulations/results/${config}/
+
 echo "!NOTE! MOS of VoD, Live and SSH needs to be calculated independently. Scripts from sshMOScalcFiles and videoMOScalcFiles may be used to do so.";
 
-echo "Simulation, exports and initial plots are complete for ${config}";
+
+echo "Simulation and exports are complete for ${config}";

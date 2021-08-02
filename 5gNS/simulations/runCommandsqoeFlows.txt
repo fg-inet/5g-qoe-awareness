@@ -1,7 +1,0 @@
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlowsBase_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesHTB_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesNoHTBVoIDSlice_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesNoHTBLoVDSlice_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesNoHTBFoDOSlice_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesNoHTBVoIPSlice_R100_Q35_M100_C100 -s 1
-./runAndExportSimConfig.sh -i qosFlowsConfig.ini -c qoeFlows5SlicesNoHTBSoSHSlice_R100_Q35_M100_C100 -s 1
