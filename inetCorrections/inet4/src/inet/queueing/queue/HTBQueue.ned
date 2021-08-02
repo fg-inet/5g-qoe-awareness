@@ -25,10 +25,6 @@ import inet.queueing.contract.IPacketClassifier;
 import inet.queueing.contract.IPacketQueue;
 import inet.queueing.contract.IPacketScheduler;
 
-//
-// This module implements a priority queue with multiple inner queues and an
-// optional shared memory buffer.
-//
 module HTBQueue extends CompoundPacketQueue
 {
     parameters:

@@ -80,10 +80,16 @@ HTBScheduler::htbClass *HTBScheduler::createAndAddNewClass(cXMLElement* oneClass
     long long ceil = atoi(oneClass->getFirstChildWithTag("ceil")->getNodeValue())*1e3;
     newClass->ceilingRate = ceil;
     long long burstTemp = atoi(oneClass->getFirstChildWithTag("burst")->getNodeValue());
-    long long burst = burstTemp*8*1e+9/linkDatarate;
-    newClass->burstSize = burst;
     long long cburstTemp = atoi(oneClass->getFirstChildWithTag("cburst")->getNodeValue());
-    long long cburst = cburstTemp*8*1e+9/linkDatarate;
+
+    if (linkDatarate == -1) {
+        throw cRuntimeError("Link datarate was -1!");
+    }
+
+    long long burst = burstTemp*8*1e+9/(long long)ceil;
+    long long cburst = cburstTemp*8*1e+9/(long long)linkDatarate;
+    
+    newClass->burstSize = burst;
     newClass->cburstSize = cburst;
     int level = atoi(oneClass->getFirstChildWithTag("level")->getNodeValue()); // Level in the tree structure. 0 = LEAF!!!
     newClass->level = level;
@@ -157,7 +163,7 @@ HTBScheduler::htbClass *HTBScheduler::createAndAddNewClass(cXMLElement* oneClass
     sprintf(tokenLevelStatisticName, "class-%s-tokenLevel", newClass->name);
     cProperty *tokenLevelStatisticTemplate = getProperties()->get("statisticTemplate", "tokenLevel");
     getEnvir()->addResultRecorders(this, newClass->tokenBucket, tokenLevelStatisticName, tokenLevelStatisticTemplate);
-    emit(newClass->tokenBucket, newClass->tokens);
+    emit(newClass->tokenBucket, (long) newClass->tokens);
 
     // Statistics collection for ctoken levels
     char ctokenLevelSignalName[50];
@@ -167,7 +173,7 @@ HTBScheduler::htbClass *HTBScheduler::createAndAddNewClass(cXMLElement* oneClass
     sprintf(ctokenLevelStatisticName, "class-%s-ctokenLevel", newClass->name);
     cProperty *ctokenLevelStatisticTemplate = getProperties()->get("statisticTemplate", "ctokenLevel");
     getEnvir()->addResultRecorders(this, newClass->ctokenBucket, ctokenLevelStatisticName, ctokenLevelStatisticTemplate);
-    emit(newClass->ctokenBucket, newClass->ctokens);
+    emit(newClass->ctokenBucket, (long) newClass->ctokens);
 
     // Statistics collection for class mode
     char classModeSignalName[50];
@@ -191,6 +197,7 @@ void HTBScheduler::initialize(int stage)
         EV_WARN << "Get link datarate" << endl;
         int interfaceIndex = getParentModule()->getParentModule()->getParentModule()->getIndex();
         linkDatarate = getParentModule()->getParentModule()->getParentModule()->getParentModule()->gateByOrdinal(interfaceIndex)->getPreviousGate()->getChannel()->getNominalDatarate();
+        // linkDatarate = -1;
         EV_WARN << "SchedInit: Link datarate = " << linkDatarate << endl;
         //register signal for dequeue index
         dequeueIndexSignal = registerSignal("dequeueIndex");
@@ -242,13 +249,7 @@ void HTBScheduler::handleMessage(cMessage *message)
 {
     Enter_Method("handleMessage");
     if (message == classModeChangeEvent) {
-//        EV_WARN << "Class mode should change from red now!"  << endl;
         check_and_cast<Ppp*>(getParentModule()->getParentModule())->refreshOutGateConnection(true);
-//        int interfaceIndex = getParentModule()->getParentModule()->getParentModule()->getIndex();
-//        double ber = check_and_cast<cDatarateChannel*>(getParentModule()->getParentModule()->getParentModule()->getParentModule()->gateByOrdinal(interfaceIndex)->getPreviousGate()->getChannel())->getDatarate();
-//        check_and_cast<cDatarateChannel*>(getParentModule()->getParentModule()->getParentModule()->getParentModule()->gateByOrdinal(interfaceIndex)->getPreviousGate()->getChannel())->setDatarate(ber);
-//        EV_WARN << "handle message will now call get num packets" << endl;
-//        getNumPackets();
     }
     else
         throw cRuntimeError("Unknown self message");
@@ -264,106 +265,47 @@ void HTBScheduler::handleMessage(cMessage *message)
 simtime_t HTBScheduler::doEvents(int level) {
     // No empty events = nothing to do
     if (levels[level]->waitingClasses.empty()) {
-//        EV_FATAL << "doEvents: There were no events for level " << level << endl;
+        EV_FATAL << "doEvents: There were no events for level " << level << endl;
         return 0;
     }
 
-//    int setLen = levels[level]->waitingClasses.size(); // Limit for the loop
-//    int i = 0; // Secondary iterator for the loop
-
-
-//    std::string printSet = "";
-//    for (auto & elem : levels[level]->waitingClasses){
-//        printSet.append(elem->name);
-//        printSet.append("(");
-//        printSet.append(elem->nextEventTime.str());
-//        printSet.append("); ");
-//    }
-//    EV_WARN << "doEvents: Wait queue for level " << level << " before updates: " << printSet << endl;
-
-
-    // Iterate over all pending "events". Care for deletion in a for loop!
-//    for (auto it = levels[level]->waitingClasses.begin(); it != levels[level]->waitingClasses.end() && i < setLen; ) {
-//    for (auto it = levels[level]->waitingClasses.begin(); it != levels[level]->waitingClasses.end(); ) {
-//        htbClass *cl = *it; // Class to update
-//
-//        it++;
-//
-//        // If the event for a class is still in the future then return the event time
-//        if (cl->nextEventTime > simTime()) {
-//            EV_WARN << "doEvents: Considering class " << cl->name << " event lies in the future..." << endl;
-//            EV_WARN << "doEvents: Next event scheduled at " << cl->nextEventTime << " but current time is " << simTime() << endl;
-//            printSet = "";
-//            for (auto & elem : levels[cl->level]->waitingClasses){
-//                printSet.append(elem->name);
-//                printSet.append("(");
-//                printSet.append(elem->nextEventTime.str());
-//                printSet.append("); ");
-//            }
-//            EV_WARN << "doEvents: Wait queue for level " << cl->level << ": " << printSet << endl;
-//            return cl->nextEventTime;
-//        }
-//
-//        // Take the class out of waiting queue and update its mode
-//        levels[level]->waitingClasses.erase(cl);
-//        long long diff = (long long) std::min((simTime() - cl->checkpointTime).inUnit(SIMTIME_NS), (int64_t)cl->mbuffer);
-//        updateClassMode(cl, &diff);
-//        EV_WARN << "doEvents: Considering class " << cl->name << " in new mode " << std::to_string(cl->mode) << endl;
-//        // If still not green (cen_send) readd to wait queue with new next event time.
-//        if (cl->mode != can_send) {
-//            htbAddToWaitTree(cl, diff);
-//        }
-////        i++;
-//    }
-
-//    std::multiset<htbClass*, waitComp> tempWaitingClasses = levels[level]->waitingClasses;
-//    std::multiset<htbClass*, waitComp>* tempWaitingClasses = new std::multiset<htbClass*, waitComp>(levels[level]->waitingClasses);
-//    std::copy(levels[level]->waitingClasses.begin(), levels[level]->waitingClasses.end(), tempWaitingClasses.begin());
-
-//    for (auto it = tempWaitingClasses->begin(); it != tempWaitingClasses->end(); ) {
     for (auto it = levels[level]->waitingClasses.begin(); it != levels[level]->waitingClasses.end(); ) {
         htbClass *cl = *it; // Class to update
-
         it++;
 
         // If the event for a class is still in the future then return the event time
         if (cl->nextEventTime > simTime()) {
-//            EV_WARN << "doEvents: Considering class " << cl->name << " event lies in the future..." << endl;
-//            EV_WARN << "doEvents: Next event scheduled at " << cl->nextEventTime << " but current time is " << simTime() << endl;
-//            printSet = "";
-//            for (auto & elem : levels[cl->level]->waitingClasses){
-//                printSet.append(elem->name);
-//                printSet.append("(");
-//                printSet.append(elem->nextEventTime.str());
-//                printSet.append("); ");
-//            }
-//            EV_WARN << "doEvents: Wait queue for level " << cl->level << ": " << printSet << endl;
+            EV_WARN << "doEvents: Considering class " << cl->name << " event lies in the future..." << endl;
+            EV_WARN << "doEvents: Next event scheduled at " << cl->nextEventTime << " but current time is " << simTime() << endl;
+            // printSet = "";
+            for (auto & elem : levels[cl->level]->waitingClasses){
+                if (elem->nextEventTime <= simTime()) {
+                    std::string printSet = "";
+                    for (auto & elem : levels[level]->waitingClasses){
+                        printSet.append(elem->name);
+                        printSet.append("(");
+                        printSet.append(elem->nextEventTime.str());
+                        printSet.append("); ");
+                    }
+                    EV_WARN << "doEvents: Wait queue for level " << level << " after updates: " << printSet << endl;
+
+                    throw cRuntimeError("Class %s has an event that's not in the future but was not upadted! Wait queue for level %d after updates: %s", elem->name, level, printSet.c_str());
+                }
+            }
             return cl->nextEventTime;
         }
 
         // Take the class out of waiting queue and update its mode
         htbRemoveFromWaitTree(cl);
-//        levels[level]->waitingClasses.erase(cl);
+        EV_WARN << "doEvents: Considering class " << cl->name << " in old mode " << std::to_string(cl->mode) << endl;
         long long diff = (long long) std::min((simTime() - cl->checkpointTime).inUnit(SIMTIME_NS), (int64_t)cl->mbuffer);
         updateClassMode(cl, &diff);
-//        EV_WARN << "doEvents: Considering class " << cl->name << " in new mode " << std::to_string(cl->mode) << endl;
+        EV_WARN << "doEvents: Considering class " << cl->name << " in new mode " << std::to_string(cl->mode) << endl;
         // If still not green (cen_send) readd to wait queue with new next event time.
         if (cl->mode != can_send) {
             htbAddToWaitTree(cl, diff);
         }
-//        i++;
     }
-
-//    delete tempWaitingClasses;
-
-//    printSet = "";
-//    for (auto & elem : levels[level]->waitingClasses){
-//        printSet.append(elem->name);
-//        printSet.append("(");
-//        printSet.append(elem->nextEventTime.str());
-//        printSet.append("); ");
-//    }
-//    EV_WARN << "doEvents: Wait queue for level " << level << " after updates: " << printSet << endl;
 
     return simTime(); // If we managed all events, then just return current time.
 }
@@ -372,33 +314,19 @@ simtime_t HTBScheduler::doEvents(int level) {
 // Returns the number of packets available to dequeue. If there are packets in the queue,
 // but none are available to dequeue will schedule an event to update the interface and
 // "force it" to dequeue again.
-int HTBScheduler::getNumPackets() const
-{
-//    EV_WARN << "Next Event 1 " << classModeChangeEvent->getTimestamp().str() << endl;
-//    EV_WARN << "Next Event 2 " << classModeChangeEvent->getArrivalTime().str() << endl;
-//    simtime_t lastChangeEvent = classModeChangeEvent->getArrivalTime();
-//    EV_WARN << "1" << endl;
-//    classModeChangeEvent->getArrivalTime();
+int HTBScheduler::getNumPackets() const {
     const_cast<HTBScheduler *>(this)->cancelEvent(classModeChangeEvent);
-//    EV_WARN << "2" << endl;
     int fullSize = 0;  // Number of all packets in the queue
     int dequeueSize = 0; // Number of packets available for dequeueing
     int leafId = 0; // Id of the leaf/queue
-//    EV_WARN << "3" << endl;
     simtime_t changeTime = simTime() + SimTime(100000, SIMTIME_NS); // Time at which we expect the next change of class mode
-//    EV_WARN << "4" << endl;
-//    std::string printSet = "";
     for (auto collection : collections) { // Iterate over all leaf queues
         int collectionNumPackets = collection->getNumPackets();
-//        EV_WARN << "5 LeafID: " << leafId << endl;
         if (leafClasses.at(leafId) == nullptr) { // Leafs need to exist. If they don't, we've done sth. wrong :)
             throw cRuntimeError("There is no leaf at index %i!", leafId);
         }
-//        EV_WARN << "6" << endl;
         long long diff = (long long) std::min((simTime() - leafClasses.at(leafId)->checkpointTime).inUnit(SIMTIME_NS), (int64_t)leafClasses.at(leafId)->mbuffer);
-//        EV_WARN << "7" << endl;
         int currClassMode = const_cast<HTBScheduler *>(this)->classMode(leafClasses.at(leafId), &diff);
-//        EV_WARN << "8 Class " << leafClasses.at(leafId)->name << " is in mode: " << currClassMode << endl;
         if (currClassMode != cant_send) { // The case when there are packets available at leaf for dequeuing
             bool parentOk = false;
             htbClass *parent = leafClasses.at(leafId)->parent;
@@ -420,45 +348,22 @@ int HTBScheduler::getNumPackets() const
             } else {
                 parentOk = true;
             }
-//            EV_WARN << "Class " << leafClasses.at(leafId)->name << " not in can't send. Is in " << currClassMode << endl;
-//            if (parentOk == true && leafClasses.at(leafId)->nextEventTime <= simTime()) {
             if (parentOk == true) {
-//                bool canSendPrintFlag = true;
                 if (currClassMode == can_send && leafClasses.at(leafId)->nextEventTime <= simTime()) {
                     dequeueSize += collectionNumPackets;
                 } else if (currClassMode == may_borrow && (currClassMode == leafClasses.at(leafId)->mode || leafClasses.at(leafId)->nextEventTime <= simTime())) {
                     dequeueSize += collectionNumPackets;
-                } //else {
-//                    canSendPrintFlag = false;
-//                    EV_FATAL << "Class " << leafClasses.at(leafId)->name << " is in " << currClassMode << "; It cannot send cause the mode will not be up to date when we try to schedule!" << endl;
-//                }
-//                if (collectionNumPackets > 0 && canSendPrintFlag == true) {
-//                    printSet.append(std::to_string(leafId));
-//                    printSet.append(";");
-//                    EV_WARN << "The following class can and is able to send..." << endl;
-//                    const_cast<HTBScheduler *>(this)->printClass(leafClasses.at(leafId));
-//                }
-            } //else {
-//                EV_FATAL << "Class " << leafClasses.at(leafId)->name << " is in " << currClassMode << "; Parents indicate that it CAN'T send or the parents will not be updated soon enough to let it send!!" << endl;
-            //}
+                }
+            }
         }
-
-//        if (const_cast<HTBScheduler *>(this)->classMode(leafClasses.at(leafId), &diff) != cant_send) { // The case when there are packets available at leaf for dequeuing
-//            dequeueSize += collection->getNumPackets();
-//        } //else { // The class is red, so there is nothing available to dequeue
-//            if (changeTime == 0 || leafClasses.at(leafId)->nextEventTime < changeTime) { // Update change time if applicable
-//                changeTime = leafClasses.at(leafId)->nextEventTime;
-//                EV_WARN << "Set change time to: " << changeTime << endl;
-//            }
-//        }
         fullSize += collectionNumPackets; // Keep track of all packets in leaf queues
-//        EV_WARN << "Queue " << leafId << " -> Num packets: " << collectionNumPackets << endl;
+        EV_WARN << "getNumPackets: Queue " << leafId << " -> Num packets: " << collectionNumPackets << endl;
         leafId++;
     }
 
-//    EV_WARN << "Curr num packets to dequeue: " << dequeueSize << "; All packets: " << fullSize << "; Possible to dequeue: " << printSet << endl;
+    EV_WARN << "Curr num packets to dequeue: " << dequeueSize << "; All packets: " << fullSize << endl;
     if (dequeueSize == 0 && fullSize > 0 && changeTime > simTime()) { // We have packets in queue, just none are available for dequeue!
-//        EV_WARN << "Next Event will be scheduled at " << changeTime.str() << endl;
+        EV_WARN << "Next Event will be scheduled at " << changeTime.str() << endl;
         const_cast<HTBScheduler *>(this)->scheduleAt(changeTime, classModeChangeEvent);  // schedule an Omnet event on when we expect things to change.
     }
     return dequeueSize;
@@ -509,28 +414,24 @@ int HTBScheduler::schedulePacket() {
     simtime_t nextEvent;
 
     int dequeueIndex = -1;
-
-    //TODO: Dequeue direct???
-
-    //TODO: What if queue empty? Probably implemented in the INET queuing module already...
-
-    nextEvent = simTime(); // TODO: Probably redundant. Remove???
+    
+    nextEvent = simTime();
 
     // Go over all levels until we find something to dequeue
     for (level = 0; level < maxHtbDepth; level++) {
-//        printLevel(levels[level], level);
         nextEvent = doEvents(level); // Do all events for level
-
         // Go through all priorities on level until we find something to dequeue
+        EV << "schedulePacket: Level " << level << endl;
+        printLevel(levels[level], level);
         for (int prio = 0; prio < maxHtbNumPrio; prio++) {
-//            EV_WARN << "Dequeue - testing: level = " << level << "; priority = " << prio << endl;
-            if (levels[level]->nextToDequeue[prio] != NULL) { // Next to dequeue is always right. If it's not null, then we can dequeue something there. If it's null, we know there is nothing to dequeue.
-//                EV_WARN << "Dequeue - Found class to dequeue on level " << level << " and priority " << prio << endl;
+            EV_WARN << "Dequeue - testing: level = " << level << "; priority = " << prio << endl;
+            // if (levels[level]->nextToDequeue[prio] != NULL) { // Next to dequeue is always right. If it's not null, then we can dequeue something there. If it's null, we know there is nothing to dequeue.
+            if (levels[level]->selfFeeds[prio].size() > 0) { // Next to dequeue is always right. If it's not null, then we can dequeue something there. If it's null, we know there is nothing to dequeue.
+                EV_WARN << "Dequeue - Found class to dequeue on level " << level << " and priority " << prio << endl;
                 dequeueIndex = htbDequeue(prio, level); // Do the dequeue in the HTB tree. Actual dequeue is done by the interface (I think)
 
             }
             if (dequeueIndex != -1) { // We found the first valid thing, just break!
-//                EV_WARN << "Dequeue - The class to dequeue (level = " << level << "; priority = " << prio << ") yielded a valid queue number " << dequeueIndex << " for dequeuing!" << endl;
                 break;
             }
         }
@@ -538,20 +439,6 @@ int HTBScheduler::schedulePacket() {
             break;
         }
     }
-//    EV_WARN << "Dequeue - Queue index to dequeue returned: " << dequeueIndex << endl;
-
-//    if (dequeueIndex == -1) {
-//        printClass(rootClass);
-//        for (auto elem : innerClasses) {
-//            printClass(elem);
-//        }
-//        for (auto elem : leafClasses) {
-//            printClass(elem);
-//        }
-//        for (auto elem : levels) {
-//            printLevel(elem, elem->levelId);
-//        }
-//    }
     emit(dequeueIndexSignal, dequeueIndex);
     return dequeueIndex; //index returned to the interface
 
@@ -559,51 +446,80 @@ int HTBScheduler::schedulePacket() {
 
 // Activates a class for a priority. Only really called for leafs
 void HTBScheduler::activateClass(htbClass *cl, int priority) {
+    EV_INFO << "activateClass called for class " << cl->name << " on priority " << priority << endl;
     if (!cl->activePriority[priority]) {
         cl->activePriority[priority] = true; // Class is now active for priority
         activateClassPrios(cl); // Take care of all other things associated with the active class (like putting it into appropriate feeds)
-//        if (cl->mode == may_borrow) {
-//            htbAddToWaitTree(cl, (long long) 0);
-//        }
+        if (cl->mode != can_send) {
+            htbAddToWaitTree(cl, (long long) 0);
+        }
     }
 }
 
 
 // Deactivates a class for a priority. Only really called for leafs. Leafs may only be active for one priority.
 void HTBScheduler::deactivateClass(htbClass *cl, int priority) {
+    EV_INFO << "deactivateClass called for class " << cl->name << " on priority " << priority << endl;
     if (cl->activePriority[priority]) {
         deactivateClassPrios(cl); // Take care of all other things associated with deactivating a class
-//        levels[cl->level]->waitingClasses.erase(cl);
+        levels[cl->level]->selfFeeds[priority].erase(cl);
+        if (cl->parent != NULL) {
+            cl->parent->inner.innerFeeds[priority].erase(cl);
+        }
+        htbRemoveFromWaitTree(cl);
         cl->activePriority[priority] = false; // Class is now inactive for priority
     }
 }
 
 // Inform the htb about a newly enqueued packet. Enqueueing is actually done in the classifier.
 void HTBScheduler::htbEnqueue(int index, Packet *packet) {
-    int packetLen = packet->getByteLength() + 7;
-//    EV_INFO << "HTBScheduler: htbEnqueue " << index << "; Enqueue " << packetLen << " bytes." << endl;
     htbClass *currLeaf = leafClasses.at(index);
-//    currLeaf->leaf.queueLevel += packetLen; //TODO: Take care of dropped packets!!!! Queue overflow or so...
-//    emit(currLeaf->leaf.queueLvl, currLeaf->leaf.queueLevel);
     activateClass(currLeaf, currLeaf->leaf.priority);
-//    printClass(currLeaf);
-//    printLevel(levels[currLeaf->level], currLeaf->level);
-
-//    EV_INFO << "HTBScheduler: Bytes in queue at index " << index << " = " << leafClasses.at(index)->type.leaf.queueLevel << endl;
     return;
 }
 
 // Gets a leaf that can be dequeued from a priority and level. Level does not have to be 0 here
 HTBScheduler::htbClass* HTBScheduler::getLeaf(int priority, int level) {
-    htbClass *cl = levels[level]->nextToDequeue[priority]; // We just take the next element as is. It will be correct thanks to activate/deactivate priorities
+    htbClass *cl = levels[level]->nextToDequeue[priority];
+    EV_WARN << "getLeaf: ||1||";
+    printClass(cl);
+    if (levels[level]->selfFeeds[priority].find(cl) == levels[level]->selfFeeds[priority].end()) {
+        levels[cl->level]->selfFeeds[priority].insert(cl);
+        levels[cl->level]->nextToDequeue[priority] = *std::next(levels[cl->level]->selfFeeds[priority].find(cl));
+        if (levels[cl->level]->nextToDequeue[priority] == *levels[cl->level]->selfFeeds[priority].end()) {
+            levels[cl->level]->nextToDequeue[priority] = *levels[cl->level]->selfFeeds[priority].begin();
+        }
+        levels[cl->level]->selfFeeds[priority].erase(cl);
+        cl = levels[cl->level]->nextToDequeue[priority];
+        EV_WARN << "getLeaf: ||2||";
+        printClass(cl);
+    }
+
+
     // If there is nothing to dequeue just return NULL (actually)
     if (cl == NULL) {
         return cl;
     }
     // Otherwise, follow the tree to the leaf
     while (cl->level > 0) {
-         cl = cl->inner.nextToDequeue[priority];
+        htbClass *parent = cl;
+        cl = parent->inner.nextToDequeue[priority];
+        EV_WARN << "getLeaf: ||3||";
+        printClass(cl);
+        if (parent->inner.innerFeeds[priority].find(cl) == parent->inner.innerFeeds[priority].end()) {
+            parent->inner.innerFeeds[priority].insert(cl);
+            parent->inner.nextToDequeue[priority] = *std::next(parent->inner.innerFeeds[priority].find(cl));
+            if (parent->inner.nextToDequeue[priority] == *parent->inner.innerFeeds[priority].end()) {
+                parent->inner.nextToDequeue[priority] = *parent->inner.innerFeeds[priority].begin();
+            }
+            parent->inner.innerFeeds[priority].erase(cl);
+            cl = parent->inner.nextToDequeue[priority];
+            EV_WARN << "getLeaf: ||4||";
+            printClass(cl);
+        }
     }
+    EV_WARN << "getLeaf: ||5||";
+    printClass(cl);
     // And return the found leaf. Thanks to the rest of code, guaranteed to return leaf or NULL.
     return cl;
 }
@@ -624,14 +540,10 @@ int HTBScheduler::htbDequeue(int priority, int level) {
             delClass = nullptr;
         }
         if (!cl) {
-//            EV_WARN << "Class does not exist!" << endl;
             return -1;
         }
-//        EV_WARN << "Checking class " << cl->name << endl;
-//        printClass(cl);
         // Take care if the queue is empty, but was not deactivated
         if (collections[cl->leaf.queueId]->isEmpty()) {
-//            EV_WARN << "Class " << cl->name << " was empty!!" << endl;
             htbClass *next;
             deactivateClass(cl, priority); // Also takes care of DRR if we deleted the nextToDequeue. Only needs to be called once, as leafs can only be active for one prio
             delClass = cl;
@@ -652,11 +564,12 @@ int HTBScheduler::htbDequeue(int priority, int level) {
         cl = getLeaf(priority, level);
 
     } while (cl != start);
-
+    EV_INFO << "htbDequeue: Queue of leaf " << cl->name << " will be dequeued in mode " << cl->mode << endl;
     if (thePacketToPop != nullptr) {
-//        EV_INFO << "HTBScheduler: htbDequeue " << retIndex << "; Dequeue " << thePacketToPop->getByteLength() + 7 << " bytes." << endl;
-//        cl->leaf.queueLevel -= thePacketToPop->getByteLength();
-//        emit(cl->leaf.queueLvl, cl->leaf.queueLevel);
+        // Take care of the deficit round robin
+        if (cl->leaf.deficit[level] < 0) {
+            throw cRuntimeError("The class %s deficit on level %d is negative!", cl->name, level);
+        }
         cl->leaf.deficit[level] -= (thePacketToPop->getByteLength() + 7);
         emit(cl->leaf.deficitSig[level], cl->leaf.deficit[level]);
         if (cl->leaf.deficit[level] < 0) {
@@ -664,52 +577,47 @@ int HTBScheduler::htbDequeue(int priority, int level) {
             emit(cl->leaf.deficitSig[level], cl->leaf.deficit[level]);
             htbClass *tempNode = cl;
             while (tempNode != rootClass) {
-                if (tempNode->parent->inner.innerFeeds[priority].size() > 1 && tempNode->mode == may_borrow) { //TODO: Probably need to take care of round robin!!
-                    tempNode->parent->inner.nextToDequeue[priority] = *std::next(tempNode->parent->inner.innerFeeds[priority].find(tempNode));
-                    if (tempNode->parent->inner.nextToDequeue[priority] == *tempNode->parent->inner.innerFeeds[priority].end()) {
-                        tempNode->parent->inner.nextToDequeue[priority] = *tempNode->parent->inner.innerFeeds[priority].begin();
-                    }
-                    if (tempNode->parent->inner.nextToDequeue[priority] != *tempNode->parent->inner.innerFeeds[priority].begin()) {
+                if (tempNode->parent->inner.innerFeeds[priority].size() > 1 && tempNode->mode == may_borrow) {
+                    if (tempNode->parent->inner.nextToDequeue[priority] == cl) {
+                        tempNode->parent->inner.nextToDequeue[priority] = *std::next(tempNode->parent->inner.innerFeeds[priority].find(tempNode));
+                        if (tempNode->parent->inner.nextToDequeue[priority] == *tempNode->parent->inner.innerFeeds[priority].end()) {
+                            tempNode->parent->inner.nextToDequeue[priority] = *tempNode->parent->inner.innerFeeds[priority].begin();
+                        } else {
+                            break;
+                        }
+                    } else {
                         break;
                     }
                 } else if (levels[tempNode->level]->selfFeeds[priority].size() > 1 && tempNode->mode == can_send) {
-//                    EV_WARN << "We are going to advance the nextToDequeue on level " << tempNode->level << " and priority " << priority << endl;
-//                    printLevel(levels[tempNode->level], tempNode->level);
-                    levels[tempNode->level]->nextToDequeue[priority] = *std::next(levels[tempNode->level]->selfFeeds[priority].find(tempNode));
-                    if (levels[tempNode->level]->nextToDequeue[priority] == *levels[tempNode->level]->selfFeeds[priority].end()) {
-                        levels[tempNode->level]->nextToDequeue[priority] = *levels[tempNode->level]->selfFeeds[priority].begin();
+                    if (levels[tempNode->level]->nextToDequeue[priority] == cl) {
+                        levels[tempNode->level]->nextToDequeue[priority] = *std::next(levels[tempNode->level]->selfFeeds[priority].find(tempNode));
+                        if (levels[tempNode->level]->nextToDequeue[priority] == *levels[tempNode->level]->selfFeeds[priority].end()) {
+                            levels[tempNode->level]->nextToDequeue[priority] = *levels[tempNode->level]->selfFeeds[priority].begin();
+                        }
+                        if (levels[tempNode->level]->nextToDequeue[priority] == nullptr) {
+                            throw cRuntimeError("Next to dequeue would be null even though it shouldn't be!");
+                        }
                     }
-                    if (levels[tempNode->level]->nextToDequeue[priority] == nullptr) {
-                        throw cRuntimeError("Next to dequeue would be null even though it shouldn't be!");
-                    }
-//                    EV_WARN << "NextToDequeue is now " << levels[tempNode->level]->nextToDequeue[priority]->name << " on level " << tempNode->level << " and priority " << priority << endl;
                     break;
                 } else if (levels[tempNode->level]->selfFeeds[priority].size() == 1 && tempNode->mode == can_send) {
+                    if (levels[tempNode->level]->nextToDequeue[priority] != tempNode) {
+                        throw cRuntimeError("We were green and got selected but were not next to dequeue!");
+                    }
                     break;
                 }
                 tempNode = tempNode->parent;
             }
         }
-        /* this used to be after charge_class but this constelation
-         * gives us slightly better performance
-         */
-//        if (collections[cl->leaf.queueId]->isEmpty()) {
+        chargeClass(cl, level, thePacketToPop);
         if (collections[cl->leaf.queueId]->getNumPackets() <= 1) {
-//            EV_WARN << "Deactivate class called from htbDequeue!" << endl;
             deactivateClass(cl, priority); // Called for leaf. Leaf can be active for only one prio
         }
-        chargeClass(cl, level, thePacketToPop);
+        
     }
-
-//    printClass(cl);
-//    printLevel(levels[cl->level], cl->level);
-//    printInner(cl->parent);
-//    EV_INFO << "HTBScheduler: Bytes in queue at index " << retIndex << " = " << collections[cl->leaf.queueId]->getNumPackets() << endl;
     return retIndex;
 }
 
 void HTBScheduler::printLevel(htbLevel *level, int index) {
-//    EV_WARN << "Self feeds for Level:  " << std::distance(std::find(std::begin(levels), std::end(levels), level),levels) << endl;
     EV_WARN << "Self feeds for Level:  " << level->levelId << endl;
     for (int i = 0; i < maxHtbNumPrio; i++) {
         std::string printSet = "";
@@ -725,14 +633,6 @@ void HTBScheduler::printLevel(htbLevel *level, int index) {
         }
         EV_WARN << "   - Self feed for priority " << i  << ": " << printSet << endl;
     }
-//    std::string printSet = "";
-//    for (auto & elem : level->waitingClasses){
-//        printSet.append(elem->name);
-//        printSet.append("(");
-//        printSet.append(elem->nextEventTime.str());
-//        printSet.append("); ");
-//    }
-//    EV_WARN << "Wait queue for level " << level->levelId << ": " << printSet << endl;
     EV_WARN << "Wait queue for level " << level->levelId << " contains " << level->waitingClasses.size() << " elements" << endl;
 }
 
@@ -775,21 +675,15 @@ inline long HTBScheduler::htb_hiwater(htbClass *cl)
 
 
 int HTBScheduler::classMode(htbClass *cl, long long *diff) {
-
     long long toks;
     if ((toks = (cl->ctokens + *diff)) < htb_lowater(cl)) {
         *diff = -toks;
-//        EV_WARN << "Class mode diff 1 = " << *diff << endl;
         return cant_send;
     }
-
     if ((toks = (cl->tokens + *diff)) >= htb_hiwater(cl)) {
-//        EV_WARN << "Class mode diff 2 = " << *diff << endl;
         return can_send;
     }
-
     *diff = -toks;
-//    EV_WARN << "Class mode diff 3 = " << *diff << endl;
     return may_borrow;
 }
 
@@ -802,19 +696,17 @@ void HTBScheduler::activateClassPrios(htbClass *cl) {
     bool tempActivity[8];
     std::copy(std::begin(cl->activePriority), std::end(cl->activePriority), std::begin(newActivity));
 
-    while (cl->mode == may_borrow && parent != NULL && std::any_of(std::begin(newActivity), std::end(newActivity), [](bool b) {return b;})) {
+    while (cl->mode == may_borrow && parent != NULL && std::any_of(std::begin(newActivity), std::end(newActivity), [](bool b) {return b;})) { // Iterate over as long as the class is in may_borrow, the class is not root and There is an activity the class should be activated on
         std::copy(std::begin(newActivity), std::end(newActivity), std::begin(tempActivity));
         for (int i = 0; i < maxHtbNumPrio; i++) { // i = priority level
-            if (tempActivity[i]) {
-                if (parent->activePriority[i]) {
-                    newActivity[i] = false;
-                } else {
-                    parent->activePriority[i] = true;
+            if (tempActivity[i]) { // Check if parent shoudl be actie for priority
+                parent->activePriority[i] = true; // Set parent to active on priority
+                if (parent->inner.innerFeeds[i].find(cl) == parent->inner.innerFeeds[i].end()) { // Check if we are in parent's inner feed
+                    if (parent->inner.nextToDequeue[i] == NULL) {
+                        parent->inner.nextToDequeue[i] = cl;
+                    }
+                    parent->inner.innerFeeds[i].insert(cl); // Finally, insert us to the inner feed
                 }
-                if (parent->inner.innerFeeds[i].size() < 1) {
-                    parent->inner.nextToDequeue[i] = cl;
-                }
-                parent->inner.innerFeeds[i].insert(cl);
             }
         }
         cl = parent;
@@ -826,10 +718,12 @@ void HTBScheduler::activateClassPrios(htbClass *cl) {
     if (cl->mode == can_send && std::any_of(std::begin(newActivity), std::end(newActivity), [](bool b) {return b;})){
         for (int i = 0; i < maxHtbNumPrio; i++) { // i = priority level
             if (newActivity[i]) {
-                if (levels[cl->level]->selfFeeds[i].size() < 1) {
-                    levels[cl->level]->nextToDequeue[i] = cl;
+                if (levels[cl->level]->selfFeeds[i].find(cl) == levels[cl->level]->selfFeeds[i].end()) {
+                    if (levels[cl->level]->nextToDequeue[i] == NULL) {
+                        levels[cl->level]->nextToDequeue[i] = cl;
+                    }
+                    levels[cl->level]->selfFeeds[i].insert(cl);
                 }
-                levels[cl->level]->selfFeeds[i].insert(cl);
             }
         }
     }
@@ -842,24 +736,16 @@ void HTBScheduler::deactivateClassPrios(htbClass *cl) {
     bool newActivity[8];
     bool tempActivity[8];
     std::copy(std::begin(cl->activePriority), std::end(cl->activePriority), std::begin(newActivity));
-
+    
     while (cl->mode == may_borrow && parent != NULL && std::any_of(std::begin(newActivity), std::end(newActivity), [](bool b) {return b;})) {
         std::copy(std::begin(newActivity), std::end(newActivity), std::begin(tempActivity));
         for (int i = 0; i < maxHtbNumPrio; i++) {
             newActivity[i] = false;
         }
-
+        
         for (int i = 0; i < maxHtbNumPrio; i++) { // i = priority level
             if (tempActivity[i]) {
                 if (parent->inner.innerFeeds[i].find(cl) != parent->inner.innerFeeds[i].end()) {
-                    if (parent->inner.innerFeeds[i].size() > 1) { //TODO: Probably need to take care of round robin!!
-                        parent->inner.nextToDequeue[i] = *std::next(parent->inner.innerFeeds[i].find(cl));
-                        if (parent->inner.nextToDequeue[i] == *parent->inner.innerFeeds[i].end()) {
-                            parent->inner.nextToDequeue[i] = *parent->inner.innerFeeds[i].begin();
-                        }
-                    } else {
-                        parent->inner.nextToDequeue[i] = NULL;
-                    }
                     parent->inner.innerFeeds[i].erase(cl);
                 }
                 if (parent->inner.innerFeeds[i].empty()) {
@@ -872,36 +758,13 @@ void HTBScheduler::deactivateClassPrios(htbClass *cl) {
         parent = cl->parent;
     }
 
-//    EV_WARN << "Working on class " << cl->name << " now with mode " << cl->mode << endl;
-
     if (cl->mode == can_send && std::any_of(std::begin(newActivity), std::end(newActivity), [](bool b) {return b;})){
         EV_WARN << "Class " << cl->name << " is with with mode " << cl->mode << " and is active on some priority!" << endl;
         for (int i = 0; i < maxHtbNumPrio; i++) { // i = priority level
-//            EV_WARN << "Testing priority " << i << endl;
+            EV_WARN << "Testing priority " << i << endl;
             if (newActivity[i]) {
-//                EV_WARN << "Class is active on priority " << i << endl;
-                if (levels[cl->level]->nextToDequeue[i] == cl) {
-//                    EV_WARN << "Class was considered next to dequeue on level  " << cl->level << " and priority " << i << endl;
-//                    EV_WARN << "Size " << cl->level << " = " << levels[cl->level]->selfFeeds[i].size() << endl;
-                    if (levels[cl->level]->selfFeeds[i].size() > 1) { //TODO: Probably need to take care of round robin!!
-//                        EV_WARN << "There was more than one class in the self feed for level " << cl->level << " and priority " << i << endl;
-//                        EV_WARN << "Select next class as one to dequeue " << endl;
-                        // Next to dequeue set to the next element in self feed before removing the deactivated element
-                        levels[cl->level]->nextToDequeue[i] = *std::next(levels[cl->level]->selfFeeds[i].find(cl));
-                        if (levels[cl->level]->nextToDequeue[i] == *levels[cl->level]->selfFeeds[i].end()) {
-                            levels[cl->level]->nextToDequeue[i] = *levels[cl->level]->selfFeeds[i].begin();
-                        }
-                        if (levels[cl->level]->nextToDequeue[i] == nullptr) {
-                            throw cRuntimeError("Next to dequeue would be null even though it shouldn't be!");
-                        }
-                    } else {
-//                        EV_WARN << "There was one or fewer classe in the self feed for level " << cl->level << " and priority " << i << endl;
-//                        EV_WARN << "Set next to dequeue to NULL" << endl;
-                        // There is nothing else other than the deactivated element in the self feed -> set next to dequeue to NULL (i.e. there is nothing to dequeue)
-                        levels[cl->level]->nextToDequeue[i] = NULL;
-                    }
-                }
-//                EV_WARN << "Erase class " << cl->name << " with with mode " << cl->mode << " from self feed on level " << cl->level << " and priority " << i << endl;
+                EV_WARN << "Class is active on priority " << i << endl;
+                EV_WARN << "Erase class " << cl->name << " with with mode " << cl->mode << " from self feed on level " << cl->level << " and priority " << i << endl;
                 levels[cl->level]->selfFeeds[i].erase(cl);
             }
         }
@@ -909,30 +772,22 @@ void HTBScheduler::deactivateClassPrios(htbClass *cl) {
 }
 
 void HTBScheduler::updateClassMode(htbClass *cl, long long *diff) {
-
+    EV_WARN << "updateClassMode: Diff 1 = " << *diff << endl;
     int newMode = classMode(cl, diff);
-
+    EV_WARN << "updateClassMode: Diff 2 = " << *diff << endl;
+    EV_WARN << "updateClassMode - oldMode = " << cl->mode << "; newMode = " << newMode << endl;
     if (newMode == cl->mode)
             return;
-    //Marija: this is just statistics I think
-       /* if (new_mode == HTB_CANT_SEND) {
-
-            cl->overlimits++;
-            q->overlimits++;
-            }*/
-
-    // TODO: !!!!!!!!!!WE NEED THIS!!!!!!!!!!!
-//    printClass(cl);
     if (std::any_of(std::begin(cl->activePriority), std::end(cl->activePriority), [](bool b) {return b;})) {
-//        EV_WARN << "Deactivate then activate!" << endl;
+       EV_WARN << "Deactivate then activate!" << endl;
         if (cl->mode != cant_send) {
-//            EV_WARN << "Deactivate priorities for class: " << cl->name << " in old mode " << cl->mode << endl;
+            EV_WARN << "updateClassMode - Deactivate priorities for class: " << cl->name << " in old mode " << cl->mode << endl;
             deactivateClassPrios(cl);
         }
         cl->mode = newMode;
         emit(cl->classMode, cl->mode);
         if (newMode != cant_send) {
-//            EV_WARN << "Activate priorities for class: " << cl->name << " in new mode " << cl->mode << endl;
+           EV_WARN << "updateClassMode - Activate priorities for class: " << cl->name << " in new mode " << cl->mode << endl;
             activateClassPrios(cl);
         }
     } else {
@@ -944,70 +799,38 @@ void HTBScheduler::updateClassMode(htbClass *cl, long long *diff) {
 void HTBScheduler::accountTokens(htbClass *cl, long long bytes, long long diff) {
 
     long long toks = diff + cl->tokens;
-    if (toks > cl->burstSize)
+    if (toks > cl->burstSize) {
+        EV_FATAL << "TOKEN BUCKET FULL!!" << endl;
         toks = cl->burstSize;
-
-        //TODO:psched_l2t_ns(&cl->ceil, bytes), Length to Time (L2T) lookup in a qdisc_rate_table, to determine how
-        //long it will take to send a packet given its size.
-    /*LINUX psched:
-     * static inline u64 psched_l2t_ns(const struct psched_ratecfg *r,
-                                 unsigned int len)
- {
-         len += r->overhead;
-
-      if (unlikely(r->linklayer == TC_LINKLAYER_ATM))
-                return ((u64)(DIV_ROUND_UP(len,48)*53) * r->mult) >> r->shift;
-
-        return ((u64)len * r->mult) >> r->shift;
-     */
-
-        // toks -= (s64) psched_l2t_ns(&cl->ceil, bytes);
+    }
     toks-= bytes*8*1e9/cl->assignedRate;
-
     if (toks <= -cl->mbuffer)
         toks = 1 - cl->mbuffer;
-
     cl->tokens = toks;
-    emit(cl->tokenBucket, cl->tokens);
+    emit(cl->tokenBucket, (long) cl->tokens);
     return;
 }
 
 void HTBScheduler::accountCTokens(htbClass *cl, long long bytes, long long diff) {
 
     long long toks = diff + cl->ctokens;
-    if (toks > cl->cburstSize)
+    if (toks > cl->cburstSize) {
         toks = cl->cburstSize;
-    //TODO:psched_l2t_ns(&cl->ceil, bytes)
-    // toks -= (s64) psched_l2t_ns(&cl->ceil, bytes);
+        EV_FATAL << "CTOKEN BUCKET FULL!!" << endl;
+    }
     toks-= bytes*8*1e9/cl->ceilingRate;
     if (toks <= -cl->mbuffer)
         toks = 1 - cl->mbuffer;
-
     cl->ctokens = toks;
-    emit(cl->ctokenBucket, cl->ctokens);
-
-   return;
+    emit(cl->ctokenBucket, (long) cl->ctokens);
+    return;
 }
 
 void HTBScheduler::htbAddToWaitTree(htbClass *cl, long long delay) {
     cl->nextEventTime = simTime() + SimTime(delay, SIMTIME_NS);
-//    EV_WARN << "Expected class " << cl->name << " change at simtime " << cl->nextEventTime << endl;
-//    std::pair<std::multiset<htbClass*, waitComp>::iterator,bool> ret;
-//    printLevel(levels[cl->level], cl->level);
-//    ret = levels[cl->level]->waitingClasses.insert(cl);
-//    if (!ret.second) {
-//        throw cRuntimeError("Could not add class to wait queue!");
-//    }
-//    double counter = 0;
-//    while (!ret.second) {
-//        counter += 0.001;
-////        EV_WARN << "Class " << cl->name << " could not be inserted to level " << cl->level << " wait queue!" << endl;
-//        cl->nextEventTime = simTime() + SimTime(delay+counter, SIMTIME_NS);
-//        ret = levels[cl->level]->waitingClasses.insert(cl);
-//        if (counter > 1) { // Leafs need to exist. If they don't, we've done sth. wrong :)
-//            throw cRuntimeError("Scheduling 1000 events at one time is not a good idea. Something is wrong!");
-//        }
-//    }
+    if (levels[cl->level]->waitingClasses.find(cl) != levels[cl->level]->waitingClasses.end()) {
+        throw cRuntimeError("Class added to waiting classes even though it was already there!");
+    }
     levels[cl->level]->waitingClasses.insert(cl);
     printLevel(levels[cl->level], cl->level);
 
@@ -1034,41 +857,33 @@ void HTBScheduler::chargeClass(htbClass *leafCl, int borrowLevel, Packet *packet
     cl = leafCl;
 
     while (cl) {
-//        EV_WARN << "Before charge" << endl;
-//        printClass(cl);
+        if (cl->checkpointTime == simTime()) {
+            throw cRuntimeError("Updating a class that was already updated exactly now!");
+        }
         diff = (long long) std::min((simTime() - cl->checkpointTime).inUnit(SIMTIME_NS), (int64_t)cl->mbuffer);
-//        EV_WARN << "Diff is: " << diff << "; Packet Bytes: " << bytes << "Used toks:" << bytes*8*1e9/cl->assignedRate << "Used ctoks:" << bytes*8*1e9/cl->ceilingRate << endl;
+        EV_WARN << "chargeClass: Diff1 is: " << diff << "; Packet Bytes: " << bytes << "Used toks:" << bytes*8*1e9/cl->assignedRate << "Used ctoks:" << bytes*8*1e9/cl->ceilingRate << endl;
         if (cl->level >= borrowLevel) {
             accountTokens(cl, bytes, diff);
         } else {
             cl->tokens += diff; /* we moved t_c; update tokens */
-            emit(cl->tokenBucket, cl->tokens);
+            emit(cl->tokenBucket, (long) cl->tokens);
         }
+        EV_WARN << "chargeClass: Diff2 is: " << diff << "; Packet Bytes: " << bytes << "Used toks:" << bytes*8*1e9/cl->assignedRate << "Used ctoks:" << bytes*8*1e9/cl->ceilingRate << endl;
         accountCTokens(cl, bytes, diff);
-
-//        EV_WARN << "Checkpoint Time before: " << cl->checkpointTime << endl;
         cl->checkpointTime = simTime();
-//        EV_WARN << "Checkpoint Time after: " << cl->checkpointTime << endl;
 
         old_mode = cl->mode;
         diff = 0;
         updateClassMode(cl, &diff);
-//        EV_WARN << "The diff = " << diff << endl;
+
         if (old_mode != cl->mode) {
-//            EV_WARN << "Mode changed from " << old_mode << " to " << cl->mode << endl;
             if (old_mode != can_send) {
                 htbRemoveFromWaitTree(cl);
-//                levels[cl->level]->waitingClasses.erase(cl);
-//                EV_WARN << "Deleted " << cl->name << " from wait queue on level " << cl->level << endl;
             }
             if (cl->mode != can_send) {
                 htbAddToWaitTree(cl, diff);
-//                EV_WARN << "Added " << cl->name << " to wait queue on level " << cl->level << endl;
-//                printLevel(levels[cl->level], cl->level);
             }
         }
-//        EV_WARN << "After charge" << endl;
-//        printClass(cl);
         cl = cl->parent;
     }
 

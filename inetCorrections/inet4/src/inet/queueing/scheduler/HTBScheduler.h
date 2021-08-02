@@ -16,7 +16,8 @@
 //
 //
 // This implementation is heavily based on the implementation of Linux HTB qdisc by Martin Devera (https://github.com/torvalds/linux/blob/master/net/sched/sch_htb.c)
-// 
+// Code base taken from the "PriorityScheduler"
+//
 
 #ifndef __INET_HTBSCHEDULER_H
 #define __INET_HTBSCHEDULER_H
@@ -33,6 +34,7 @@
 #include <array>
 #include <cstdlib>
 #include <algorithm>
+#include <functional>
 
 namespace inet {
 namespace queueing {
@@ -73,8 +75,8 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
         // We only need to traverse it from the top when there are classes in the inner feeds, which then store the pointers to children
 
         // The token buckets
-        long tokens = 0; // For assured rate
-        long ctokens = 0; // For ceiling rate
+        long long tokens = 0; // For assured rate
+        long long ctokens = 0; // For ceiling rate
 
         // The mode of the class
         int mode = can_send;
@@ -105,6 +107,9 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
 
     struct waitComp { // Comparator to sort the waiting classes according to their expected mode change time
         bool operator()(htbClass* const & a, htbClass* const & b) const {
+            if (a->nextEventTime == b->nextEventTime) {
+                return std::less<htbClass*>{}(a, b); // Care for DRR ordering
+            }
             return a->nextEventTime < b->nextEventTime;
         }
     };
@@ -125,7 +130,6 @@ class INET_API HTBScheduler : public PacketSchedulerBase, public IPacketCollecti
     std::vector<htbClass*> innerClasses; // Inner classes saved here for ease of access
     std::vector<htbClass*> leafClasses; // Leaf classes saved here for ease of access
 
-    // TODO: WIP: solve the problem that omnet does not periodically tries to dequeue.
     cMessage *classModeChangeEvent = nullptr;
 
 
