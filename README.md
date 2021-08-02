@@ -22,6 +22,6 @@ Installation steps (list may be incomplete):
   3. Right-click the inet4 project in project explorer and select "build project". This should compile the framework
   4. You can also compile the framework from console. To do that look at the INSTALL textfile you'll find in the INET folder.
  
-To run the simulation from IDE open an INI file from 5gNS folder (bestEffort.ini should be a safe first bet) in Omnet++ IDE and click the green run button. When the simulation starts a configuration can be selected. For the first run, I recommend using the `bestEffortAdmCon_R100_Q35_M100_C100` configuration which will start a simulation with clients for each of VoIP, SSH, VoD, live video and file download applications.
+To run the simulation from IDE open an INI file from 5gNS folder (bestEffort.ini should be a safe first bet) in Omnet++ IDE and click the green run button. When the simulation starts a configuration can be selected. For the first run, I recommend using the `bestEffortAdmConV5_R100_Q35_M100_C100` configuration which will start a simulation with clients for each of VoIP, SSH, VoD, live video and file download applications.
 
 You can also use the `runAndExportSimConfig.sh` script present in the `5gNS/simulations` folder to run and immediately export simulation results.
