@@ -4,7 +4,7 @@ sys.path.insert(0,currentdir)
 
 import numpy as np
 
-# These functions were determined experimentally using the LS tests from "baselineTestV3.ini"
+# These functions were determined experimentally
 cliTypeFuncMapping = {'hostSSH' : [900, 0.288, 1],
                       'hostVIP' : [2.66e+05, 2.80e-01, 2.64e+01],
                       'hostVID' : [1.67e+02, 3.54e-03, 1.53e-22],
@@ -20,12 +20,6 @@ def negLinFunc(x, a, b, c):
 
 def estDelay(cliType, availBand):
     funcMap = cliTypeFuncMapping[cliType]
-    # if cliType == 'hostVIP':
-    #     retVal = negLinFunc(availBand, *funcMap)
-    #     if retVal < 2:
-    #         return 2
-    #     else:
-    #         return retVal
     if cliType in cliTypeFuncMapping:
         delay = negExpFunc(availBand, *funcMap)
         if cliType == 'hostVIP':
